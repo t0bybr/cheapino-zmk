@@ -1,5 +1,7 @@
 include:
-  - board: nice_nano_v2
+  # Zephyr 4.1 HWMv2 board-variant syntax: nice_nano@2.0.0 + //zmk
+  # Short form: nice_nano//zmk (default revision 2.0.0)
+  - board: nice_nano//zmk
     shield: cheapinov2
     snippet: studio-rpc-usb-uart
 # there is no settingsreset (needed) for the XIAO
