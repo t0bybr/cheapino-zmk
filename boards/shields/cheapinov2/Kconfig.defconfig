@@ -1,0 +1,10 @@
+# Copyright (c) 2022 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+#
+CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_PROXY = Y
+CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING = Y
+CONFIG_ZMK_MOUSE=y
+
+config ZMK_KEYBOARD_NAME
+    default "Cheapino v2"
+    
