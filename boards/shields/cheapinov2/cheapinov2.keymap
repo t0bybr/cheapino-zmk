@@ -87,9 +87,12 @@
 /* Keep caps-word running through dashes/underscores/backspace.
  * On DE-Linux the physical '-' key sends SLASH, and '-' from the NUM layer
  * sends KP_MINUS, so those need to be in the list too.
+ * mapped-layers: also honour caps on the CMD layer (for umlauts, clipboard)
+ * so caps_word doesn't abort when DEL-thumb is held.
  */
 &caps_word {
     continue-list = <UNDERSCORE MINUS BACKSPACE DELETE KP_MINUS SLASH>;
+    mapped-layers = <0 8>;   // BASE and CMD
 };
 
 / {
@@ -141,6 +144,27 @@
             bindings = <&macro_tap &kp SCROLLLOCK &kp LS(N2) &kp NON_US_BACKSLASH>; };
         rsquote: right_single_quote { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp SCROLLLOCK &kp LS(NON_US_HASH) &kp LS(NON_US_BACKSLASH)>; };
+
+        /* Further typography via compose (Scroll-Lock = Compose on DE-Linux). */
+        tm: trademark { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp T &kp M>; };
+        degree: degree_sign { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp O &kp O>; };
+        onehalf: onehalf { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp N1 &kp N2>; };
+        onequart: onequart { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp N1 &kp N4>; };
+        threequart: threequart { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp N3 &kp N4>; };
+
+        /* No standard compose for ≈ or ➜. Use Linux IBus/GTK unicode-hex input
+         * (Ctrl+Shift+U, hex, Space). If it doesn't work, add to ~/.XCompose
+         * or enable IBus.
+         */
+        approx: approx_equal { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LC(LS(U)) &kp N2 &kp N2 &kp N4 &kp N8 &kp SPACE>; };
+        rarrow: heavy_right_arrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LC(LS(U)) &kp N2 &kp N7 &kp N9 &kp C &kp SPACE>; };
     };
 
     /* Leader-key instance with a curated set of sequences.
@@ -456,12 +480,17 @@
             >;
         };
 
-        /* NUM - numbers + DE-layout bracket row + typography on right hand */
+        /* NUM - numbers + DE-layout bracket row + full typography on right hand.
+         * Right side (as Toby sketched):
+         *   —  "  '  ™  ½
+         *   –  „  ‚  €  ¼
+         *   ≈  °  …  ➜  ¾
+         */
         NUM {
             bindings = <
-&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash      &ndash   &ellip  &dqlo  &dqhi
-&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &trans      &trans   &trans  &trans &trans
-&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &kp DE_EURO &rsquote &dquote &none  &none
+&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash  &dquote  &rsquote &tm     &onehalf
+&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &ndash  &dqlo    &dqhi    &kp DE_EURO &onequart
+&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &approx &degree  &ellip   &rarrow &threequart
                               &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
         };
@@ -476,12 +505,12 @@
             >;
         };
 
-        /* EXTRA - tri-layer (SYM_R + NUM). Leader + system + BT + debug. */
+        /* EXTRA - tri-layer (MEDIA + MOUSE). Leader + system + BT + debug. */
         EXTRA {
             bindings = <
 &leader     &bootloader  &studio_unlock  &bt BT_CLR  &sys_reset     &none  &none  &none  &none  &none
 &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2   &bt BT_SEL 3 &bt BT_SEL 4  &out OUT_USB &out OUT_BLE &none &none &none
-&none       &none         &none          &none       &none          &none  &none  &none  &none  &none
+&soft_off   &none         &none          &none       &none          &none  &none  &none  &none  &none
                          &trans &trans &trans                       &trans &trans &trans
             >;
         };
