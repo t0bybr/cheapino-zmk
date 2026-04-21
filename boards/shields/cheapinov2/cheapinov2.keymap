@@ -84,9 +84,12 @@
     acceleration-exponent = <0>;
 };
 
-/* Keep caps-word running through typographic connectors */
+/* Keep caps-word running through dashes/underscores/backspace.
+ * On DE-Linux the physical '-' key sends SLASH, and '-' from the NUM layer
+ * sends KP_MINUS, so those need to be in the list too.
+ */
 &caps_word {
-    continue-list = <UNDERSCORE MINUS BACKSPACE DELETE>;
+    continue-list = <UNDERSCORE MINUS BACKSPACE DELETE KP_MINUS SLASH>;
 };
 
 / {
@@ -124,6 +127,8 @@
                              bindings = <&macro_tap &uc 0x201A 0x2018>; };  // ‚ / '
         rsquote: right_single_quote { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
                              bindings = <&macro_tap &uc 0x2019 0>; };       // ' typographic apostrophe
+        dquote:  double_quote_high { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+                             bindings = <&macro_tap &uc 0x201C 0>; };       // " double high quote
     };
 
     /* Leader-key instance with a curated set of sequences.
@@ -190,9 +195,9 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <250>;
-            quick-tap-ms = <150>;
-            require-prior-idle-ms = <125>;
+            tapping-term-ms = <210>;
+            quick-tap-ms = <125>;
+            require-prior-idle-ms = <75>;
             hold-trigger-key-positions = <KEYS_R THUMBS_R>;
             bindings = <&kp>, <&kp>;
         };
@@ -202,9 +207,9 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <250>;
-            quick-tap-ms = <150>;
-            require-prior-idle-ms = <125>;
+            tapping-term-ms = <210>;
+            quick-tap-ms = <125>;
+            require-prior-idle-ms = <75>;
             hold-trigger-key-positions = <KEYS_L THUMBS_L>;
             bindings = <&kp>, <&kp>;
         };
@@ -214,9 +219,9 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <280>;
-            quick-tap-ms = <150>;
-            require-prior-idle-ms = <125>;
+            tapping-term-ms = <240>;
+            quick-tap-ms = <125>;
+            require-prior-idle-ms = <75>;
             hold-trigger-key-positions = <KEYS_R THUMBS_R>;
             hold-trigger-on-release;
             bindings = <&kp>, <&kp>;
@@ -226,9 +231,9 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <280>;
-            quick-tap-ms = <150>;
-            require-prior-idle-ms = <125>;
+            tapping-term-ms = <240>;
+            quick-tap-ms = <125>;
+            require-prior-idle-ms = <75>;
             hold-trigger-key-positions = <KEYS_L THUMBS_L>;
             hold-trigger-on-release;
             bindings = <&kp>, <&kp>;
@@ -412,10 +417,10 @@
         /* NAV - arrow cluster + page/home/end */
         NAV {
             bindings = <
-&none  &none  &none  &none  &none            &none     &kp PG_UP    &kp UP       &kp PG_DN    &none
-&trans &trans &trans &trans &none            &kp HOME  &kp LEFT     &kp DOWN     &kp RIGHT    &kp END
-&none  &none  &none  &none  &none            &none     &none        &none        &none        &none
-                    &none  &trans &none      &kp LGUI  &kp LG(TAB)  &kp LG(LS(TAB))
+&none  &none  &none  &none  &none            &none     &kp PG_UP        &kp UP       &kp PG_DN    &none
+&trans &trans &trans &trans &none            &kp HOME  &kp LEFT         &kp DOWN     &kp RIGHT    &kp END
+&none  &none  &none  &none  &none            &none     &kp LG(GRAVE)    &none        &none        &none
+                    &none  &trans &none      &kp LGUI  &kp LG(TAB)      &kp LG(LS(TAB))
             >;
         };
 
@@ -444,7 +449,7 @@
             bindings = <
 &kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash      &ndash   &ellip  &dqlo  &dqhi
 &kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &trans      &trans   &trans  &trans &trans
-&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &kp DE_EURO &rsquote &none   &none  &none
+&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &kp DE_EURO &rsquote &dquote &none  &none
                               &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
         };
