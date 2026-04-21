@@ -150,16 +150,27 @@
             sq_oswin { sequence = <O S W>;       bindings = <&uc UC_SET_WIN_COMPOSE>; };
         };
 
-        /* DEL thumb tap-dance:
-         *   1x tap  -> DEL (with CMD layer while held)
-         *   2x tap  -> Leader key
-         * QMK equivalent: DEL_FKY hybrid.
+        /* Right-outer thumb tap-dance (QMK-style DEL_FKY semantics):
+         *   1x tap  -> Leader key
+         *   2x tap  -> Ctrl+Space (app-leader shortcut)
+         *   hold    -> CMD layer
+         * DEL itself remains reachable via Shift+Backspace (bspc_del mod-morph).
          */
         del_td: del_tap_dance {
             compatible = "zmk,behavior-tap-dance";
             #binding-cells = <0>;
             tapping-term-ms = <200>;
-            bindings = <&lt_t CMD DEL>, <&leader>;
+            bindings = <&lt_leader CMD 0>, <&kp LC(SPACE)>;
+        };
+
+        /* Hold-tap: hold = CMD layer, tap = leader behavior (0-cell). */
+        lt_leader: layer_tap_leader {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <300>;
+            quick-tap-ms = <150>;
+            bindings = <&mo>, <&leader>;
         };
     };
 
