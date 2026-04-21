@@ -12,6 +12,12 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
+
+/* Override pointing defaults BEFORE including pointing.h.
+ * Default values are 600 (move) and 10 (scroll). Raise move, slow scroll.
+ */
+#define ZMK_POINTING_DEFAULT_MOVE_VAL 1800
+#define ZMK_POINTING_DEFAULT_SCRL_VAL 10
 #include <dt-bindings/zmk/pointing.h>
 #include <dt-bindings/zmk/outputs.h>
 
@@ -60,14 +66,15 @@
 
 /* Mouse ramp tuning - approximates QMK's MK_KINETIC_SPEED feel (fast start,
  * moderate top speed, slow wheel). ZMK has no friction/decay, only ramp-up.
+ * Primary speed knob is ZMK_POINTING_DEFAULT_MOVE_VAL above; this controls ramp.
  */
 &mmv {
-    time-to-max-speed-ms = <150>;
-    acceleration-exponent = <1>;
+    time-to-max-speed-ms = <100>;
+    acceleration-exponent = <2>;
 };
 
 &msc {
-    time-to-max-speed-ms = <600>;
+    time-to-max-speed-ms = <500>;
     acceleration-exponent = <0>;
 };
 
