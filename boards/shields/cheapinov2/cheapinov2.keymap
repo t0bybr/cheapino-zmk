@@ -207,7 +207,7 @@
         del_td: del_tap_dance {
             compatible = "zmk,behavior-tap-dance";
             #binding-cells = <0>;
-            tapping-term-ms = <200>;
+            tapping-term-ms = <150>;
             bindings = <&lt_leader CMD 0>, <&kp LC(SPACE)>;
         };
 
@@ -400,10 +400,12 @@
             if-layers = <SYM_R NUM>;
             then-layer = <FKEY>;
         };
-        extra_tri {
-            if-layers = <MOUSE SYM_R>;
-            then-layer = <EXTRA>;
-        };
+        /* EXTRA is triggered via a combo instead of tri-layer to sidestep the
+         * balanced hold-tap race that gave us underscores when TAB+ENT were
+         * held together (lt_t has no hold-trigger-key-positions). The combo
+         * fires on near-simultaneous press and &mo holds EXTRA as long as
+         * one of the combo keys is still held.
+         */
     };
 
     combos {
@@ -440,6 +442,14 @@
             bindings = <&caps_word>;
             layers = <BASE>;
         };
+
+        /* TAB + ENT thumbs -> EXTRA layer (momentary while held). */
+        combo_extra {
+            timeout-ms = <30>;
+            key-positions = <32 33>;  // TAB_MOU + ENT_SYM
+            bindings = <&mo EXTRA>;
+            layers = <BASE>;
+        };
     };
 
     keymap {
@@ -474,7 +484,7 @@
 &none  &none  &none  &none  &none            &none     &kp PG_UP        &kp UP       &kp PG_DN    &none
 &trans &trans &trans &trans &none            &kp HOME  &kp LEFT         &kp DOWN     &kp RIGHT    &kp END
 &none  &none  &none  &none  &none            &none     &kp LA(GRAVE)    &none        &none        &none
-                    &none  &trans &none      &kt LALT  &kp TAB          &kp LS(TAB)
+                    &none  &trans &none      &kt LALT  &kp LA(TAB)      &kp LA(LS(TAB))
             >;
         };
 
