@@ -10,6 +10,7 @@
  */
 
 #include <behaviors.dtsi>
+#include <behaviors/unicode.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 
@@ -20,6 +21,11 @@
 #define ZMK_POINTING_DEFAULT_SCRL_VAL 10
 #include <dt-bindings/zmk/pointing.h>
 #include <dt-bindings/zmk/outputs.h>
+
+/* Host OS default for unicode input. Switch at runtime via UC_SET_* bindings. */
+&uc {
+    default-mode = <UC_MODE_LINUX>;
+};
 
 #define BASE   0
 #define MEDIA  1
@@ -70,7 +76,7 @@
  */
 &mmv {
     time-to-max-speed-ms = <100>;
-    acceleration-exponent = <2>;
+    acceleration-exponent = <3>;
 };
 
 &msc {
@@ -96,6 +102,52 @@
             wait-ms = <0>;
             tap-ms = <0>;
             bindings = <&macro_tap &kp LS(EQL) &kp SPACE>;
+        };
+
+        /* Typography macros - typographic dashes, ellipsis, smart quotes.
+         * Sent via the Unicode behavior, so they work on any configured OS.
+         */
+        mdash: em_dash     { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+                             bindings = <&macro_tap &uc 0x2014 0>; };
+        ndash: en_dash     { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+                             bindings = <&macro_tap &uc 0x2013 0>; };
+        ellip: ellipsis    { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+                             bindings = <&macro_tap &uc 0x2026 0>; };
+        dqlo:  de_dq_low   { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+                             bindings = <&macro_tap &uc 0x201E 0x201C>; };  // „ / "
+        dqhi:  de_dq_high  { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+                             bindings = <&macro_tap &uc 0x201A 0x2018>; };  // ‚ / '
+    };
+
+    /* Leader-key instance with a curated set of sequences.
+     * See urob/zmk-leader-key. Sequences are keycode-based.
+     */
+    behaviors {
+        leader: leader_key {
+            compatible = "zmk,behavior-leader-key";
+            #binding-cells = <0>;
+            ignore-keys = <LSHFT RSHFT>;  // pass shift through, don't terminate
+            /* Unicode-typography */
+            sq_md  { sequence = <M D>;       bindings = <&mdash>; };
+            sq_nd  { sequence = <N D>;       bindings = <&ndash>; };
+            sq_el  { sequence = <E L>;       bindings = <&ellip>; };
+            sq_dql { sequence = <D Q L>;     bindings = <&dqlo>; };
+            sq_dqh { sequence = <D Q H>;     bindings = <&dqhi>; };
+            /* Output + Bluetooth profile management */
+            sq_usb { sequence = <O U S B>;   bindings = <&out OUT_USB>; };
+            sq_ble { sequence = <O B L E>;   bindings = <&out OUT_BLE>; };
+            sq_bt0 { sequence = <B N0>;      bindings = <&bt BT_SEL 0>; };
+            sq_bt1 { sequence = <B N1>;      bindings = <&bt BT_SEL 1>; };
+            sq_bt2 { sequence = <B N2>;      bindings = <&bt BT_SEL 2>; };
+            sq_btc { sequence = <B C>;       bindings = <&bt BT_CLR>; };
+            /* System */
+            sq_boot  { sequence = <B O O T>;     bindings = <&bootloader>; };
+            sq_reset { sequence = <R E S E T>;   bindings = <&sys_reset>; };
+            sq_stud  { sequence = <S T U D>;     bindings = <&studio_unlock>; };
+            /* OS switch for unicode input */
+            sq_oslx  { sequence = <O S L>;       bindings = <&uc UC_SET_LINUX>; };
+            sq_osmac { sequence = <O S M>;       bindings = <&uc UC_SET_MACOS>; };
+            sq_oswin { sequence = <O S W>;       bindings = <&uc UC_SET_WIN_COMPOSE>; };
         };
     };
 
@@ -367,11 +419,11 @@
             >;
         };
 
-        /* EXTRA - system / BT / debug (reachable via thumbs in future) */
+        /* EXTRA - tri-layer (SYM_R + NUM). Leader + system + BT + debug. */
         EXTRA {
             bindings = <
-&sys_reset  &bootloader  &studio_unlock  &bt BT_CLR  &none          &none  &none  &none  &none  &none
-&bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2  &bt BT_SEL 3 &bt BT_SEL 4   &out OUT_USB &out OUT_BLE &none &none &none
+&leader     &bootloader  &studio_unlock  &bt BT_CLR  &sys_reset     &none  &none  &none  &none  &none
+&bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2   &bt BT_SEL 3 &bt BT_SEL 4  &out OUT_USB &out OUT_BLE &none &none &none
 &none       &none         &none          &none       &none          &none  &none  &none  &none  &none
                          &trans &trans &trans                       &trans &trans &trans
             >;
