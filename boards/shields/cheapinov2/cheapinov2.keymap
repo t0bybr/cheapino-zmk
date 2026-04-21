@@ -92,7 +92,7 @@
  * another approach.)
  */
 &caps_word {
-    continue-list = <UNDERSCORE MINUS BACKSPACE DELETE KP_MINUS SLASH>;
+    continue-list = <UNDERSCORE MINUS BACKSPACE DELETE KP_MINUS SLASH SQT SEMI LBKT>;
 };
 
 / {
@@ -324,6 +324,24 @@
             bindings = <&mo>, <&esc_tilde>;
         };
 
+        /* Umlaut mod-morphs: unshifted = ae/oe/ue/ss, shifted (incl. caps-word) = Ae/Oe/Ue/SS.
+         * caps-word applies its internal shift only to alphanumeric HID codes, so plain
+         * &kp DE_ADIA (= SQT) wouldn't be capitalised. A mod-morph lets us respond to the
+         * shift state explicitly and keeps caps-word meaningful across umlauts.
+         */
+        ae_m: umlaut_ae { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DE_ADIA>, <&kp LS(DE_ADIA)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; };
+        oe_m: umlaut_oe { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DE_ODIA>, <&kp LS(DE_ODIA)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; };
+        ue_m: umlaut_ue { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DE_UDIA>, <&kp LS(DE_UDIA)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; };
+        ss_m: eszett    { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DE_SS>, <&kp LS(DE_SS)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; };
+
         /* Shift+Backspace = Delete */
         bspc_del: backspace_delete {
             compatible = "zmk,behavior-mod-morph";
@@ -383,7 +401,7 @@
             then-layer = <FKEY>;
         };
         extra_tri {
-            if-layers = <MEDIA MOUSE>;
+            if-layers = <NAV NUM>;
             then-layer = <EXTRA>;
         };
     };
@@ -521,8 +539,8 @@
          */
         CMD {
             bindings = <
-&none        &none  &none     &kp LC(LS(V))  &none          &none   &none   &kp DE_UDIA  &kp LC(LS(C))  &none
-&kp DE_ADIA  &trans &kp DE_SS &trans         &trans         &trans  &trans  &trans       &trans         &kp DE_ODIA
+&none        &none  &none     &kp LC(LS(V))  &none          &none   &none   &ue_m        &kp LC(LS(C))  &none
+&ae_m        &trans &ss_m     &trans         &trans         &trans  &trans  &trans       &trans         &oe_m
 &none        &none  &none     &none          &none          &none   &none   &none        &none          &none
                               &kp LC(C) &none &none                 &none   &none        &trans
             >;
