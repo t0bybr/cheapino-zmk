@@ -473,8 +473,8 @@
             bindings = <
 &none  &none  &none  &none  &none            &none     &kp PG_UP        &kp UP       &kp PG_DN    &none
 &trans &trans &trans &trans &none            &kp HOME  &kp LEFT         &kp DOWN     &kp RIGHT    &kp END
-&none  &none  &none  &none  &none            &none     &kp LG(GRAVE)    &none        &none        &none
-                    &none  &trans &none      &kp LGUI  &kp LG(TAB)      &kp LG(LS(TAB))
+&none  &none  &none  &none  &none            &none     &kp LA(GRAVE)    &none        &none        &none
+                    &none  &trans &none      &kt LALT  &kp TAB          &kp LS(TAB)
             >;
         };
 
@@ -509,7 +509,7 @@
 &kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash  &dquote  &rsquote &tm     &onehalf
 &kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &ndash  &dqlo    &dqhi    &kp DE_EURO &onequart
 &de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &approx &degree  &ellip   &rarrow &threequart
-                              &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
+                              &kp N0         &trans         &kp KP_MINUS      &trans &trans &trans
             >;
         };
 
