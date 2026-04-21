@@ -84,6 +84,11 @@
     acceleration-exponent = <0>;
 };
 
+/* Keep caps-word running through typographic connectors */
+&caps_word {
+    continue-list = <UNDERSCORE MINUS BACKSPACE DELETE>;
+};
+
 / {
     macros {
         /* Literal `^` on DE: press dead-key Grave, then Space to resolve. */
@@ -117,6 +122,8 @@
                              bindings = <&macro_tap &uc 0x201E 0x201C>; };  // „ / "
         dqhi:  de_dq_high  { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
                              bindings = <&macro_tap &uc 0x201A 0x2018>; };  // ‚ / '
+        rsquote: right_single_quote { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+                             bindings = <&macro_tap &uc 0x2019 0>; };       // ' typographic apostrophe
     };
 
     /* Leader-key instance with a curated set of sequences.
@@ -366,6 +373,14 @@
             bindings = <&kp LC(X)>;
             layers = <BASE>;
         };
+
+        /* Both shifts together -> Caps Word (QMK BOTH_SHIFTS_TURNS_ON_CAPS_WORD) */
+        combo_caps {
+            timeout-ms = <50>;
+            key-positions = <13 16>;  // HM_T (LSHFT) + HM_N (RSHFT)
+            bindings = <&caps_word>;
+            layers = <BASE>;
+        };
     };
 
     keymap {
@@ -427,9 +442,9 @@
         /* NUM - numbers + DE-layout bracket row + typography on right hand */
         NUM {
             bindings = <
-&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash &ndash &ellip &dqlo  &dqhi
-&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &trans &trans &trans &trans &trans
-&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &none  &none  &none  &none  &none
+&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash      &ndash   &ellip  &dqlo  &dqhi
+&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &trans      &trans   &trans  &trans &trans
+&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &kp DE_EURO &rsquote &none   &none  &none
                               &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
         };
