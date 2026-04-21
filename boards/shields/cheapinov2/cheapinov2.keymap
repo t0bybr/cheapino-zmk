@@ -401,7 +401,7 @@
             then-layer = <FKEY>;
         };
         extra_tri {
-            if-layers = <NAV NUM>;
+            if-layers = <MOUSE SYM_R>;
             then-layer = <EXTRA>;
         };
     };
@@ -509,7 +509,7 @@
 &kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash  &dquote  &rsquote &tm     &onehalf
 &kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &ndash  &dqlo    &dqhi    &kp DE_EURO &onequart
 &de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &approx &degree  &ellip   &rarrow &threequart
-                              &kp N0         &trans         &kp KP_MINUS      &trans &trans &trans
+                              &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
         };
 
