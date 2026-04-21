@@ -149,6 +149,18 @@
             sq_osmac { sequence = <O S M>;       bindings = <&uc UC_SET_MACOS>; };
             sq_oswin { sequence = <O S W>;       bindings = <&uc UC_SET_WIN_COMPOSE>; };
         };
+
+        /* DEL thumb tap-dance:
+         *   1x tap  -> DEL (with CMD layer while held)
+         *   2x tap  -> Leader key
+         * QMK equivalent: DEL_FKY hybrid.
+         */
+        del_td: del_tap_dance {
+            compatible = "zmk,behavior-tap-dance";
+            #binding-cells = <0>;
+            tapping-term-ms = <200>;
+            bindings = <&lt_t CMD DEL>, <&leader>;
+        };
     };
 
     behaviors {
@@ -314,7 +326,7 @@
             then-layer = <FKEY>;
         };
         extra_tri {
-            if-layers = <NAV MOUSE>;
+            if-layers = <MEDIA MOUSE>;
             then-layer = <EXTRA>;
         };
     };
@@ -359,7 +371,7 @@
 &kp Q          &kp W          &kp F          &kp P          &kp G           &kp J              &kp L          &kp U          &kp Z          &lit_quot
 &hrm_lg LGUI A &hrm_l LALT R  &hrm_l LCTRL S &hrm_l LSHFT T &kp D           &kp H              &hrm_r RSHFT N &hrm_r RCTRL E &hrm_r RALT I  &hrm_rg RGUI O
 &kp Y          &kp X          &kp C          &kp V          &kp B           &kp K              &kp M          &comma_lt      &dot_gt        &lit_slsh
-                              &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t SYM_R RET &lt_bspc NUM 0 &lt_t CMD DEL
+                              &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t SYM_R RET &lt_bspc NUM 0 &del_td
             >;
         };
 
