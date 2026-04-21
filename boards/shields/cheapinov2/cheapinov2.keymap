@@ -183,11 +183,10 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <280>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <200>;
+            tapping-term-ms = <250>;
+            quick-tap-ms = <150>;
+            require-prior-idle-ms = <125>;
             hold-trigger-key-positions = <KEYS_R THUMBS_R>;
-            hold-trigger-on-release;
             bindings = <&kp>, <&kp>;
         };
 
@@ -196,11 +195,10 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <280>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <200>;
+            tapping-term-ms = <250>;
+            quick-tap-ms = <150>;
+            require-prior-idle-ms = <125>;
             hold-trigger-key-positions = <KEYS_L THUMBS_L>;
-            hold-trigger-on-release;
             bindings = <&kp>, <&kp>;
         };
 
@@ -209,9 +207,9 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <300>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <200>;
+            tapping-term-ms = <280>;
+            quick-tap-ms = <150>;
+            require-prior-idle-ms = <125>;
             hold-trigger-key-positions = <KEYS_R THUMBS_R>;
             hold-trigger-on-release;
             bindings = <&kp>, <&kp>;
@@ -221,9 +219,9 @@
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <300>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <200>;
+            tapping-term-ms = <280>;
+            quick-tap-ms = <150>;
+            require-prior-idle-ms = <125>;
             hold-trigger-key-positions = <KEYS_L THUMBS_L>;
             hold-trigger-on-release;
             bindings = <&kp>, <&kp>;
@@ -426,10 +424,10 @@
             >;
         };
 
-        /* NUM - numbers + DE-layout bracket row */
+        /* NUM - numbers + DE-layout bracket row + typography on right hand */
         NUM {
             bindings = <
-&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &none  &none  &none  &none  &none
+&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash &ndash &ellip &dqlo  &dqhi
 &kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &trans &trans &trans &trans &trans
 &de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &none  &none  &none  &none  &none
                               &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
