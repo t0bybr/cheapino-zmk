@@ -1,1 +1,8 @@
 #include "cheapinov2.dtsi"
+
+/* Disable the blue status LED on the Nice!Nano (P0.15).
+ * Too bright on cheap clones. User can reassign as indicator later if wanted.
+ */
+&blue_led {
+    status = "disabled";
+};
