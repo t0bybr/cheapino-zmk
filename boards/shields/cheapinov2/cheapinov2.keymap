@@ -112,23 +112,35 @@
             bindings = <&macro_tap &kp LS(EQL) &kp SPACE>;
         };
 
-        /* Typography macros - typographic dashes, ellipsis, smart quotes.
-         * Sent via the Unicode behavior, so they work on any configured OS.
+        /* Typography macros - native via Linux X11 compose key.
+         * Requires `setxkbmap -option compose:sclk` (or similar) so that
+         * Scroll-Lock is treated as the Compose key. No IBus / unicode-input
+         * needed. DE-Linux layout; mac gets its own set in the MAC_BASE layer.
+         *
+         * Compose sequences used (all starting with Scroll-Lock = Compose):
+         *   - - -      -> em-dash  —
+         *   - - .      -> en-dash  –
+         *   . .        -> ellipsis …
+         *   S(2) ,     -> low  double-quote „   ( " ,  )
+         *   S(2) <     -> high double-quote "   ( " <  )   < = NON_US_BACKSLASH
+         *   S(#) ,     -> low  single-quote ‚   ( ' ,  )   # = NON_US_HASH
+         *   S(#) <     -> high single-quote '   ( ' <  )
+         *   S(#) S(<)  -> right single quote ' (= typographic apostrophe U+2019)
          */
-        mdash: em_dash     { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-                             bindings = <&macro_tap &uc 0x2014 0>; };
-        ndash: en_dash     { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-                             bindings = <&macro_tap &uc 0x2013 0>; };
-        ellip: ellipsis    { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-                             bindings = <&macro_tap &uc 0x2026 0>; };
-        dqlo:  de_dq_low   { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-                             bindings = <&macro_tap &uc 0x201E 0x201C>; };  // „ / "
-        dqhi:  de_dq_high  { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-                             bindings = <&macro_tap &uc 0x201A 0x2018>; };  // ‚ / '
+        mdash: em_dash { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp SLASH &kp SLASH &kp SLASH>; };
+        ndash: en_dash { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp SLASH &kp SLASH &kp DOT>; };
+        ellip: ellipsis { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp DOT &kp DOT>; };
+        dqlo:  de_dq_low { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp LS(N2) &kp COMMA>; };
+        dqhi:  de_sq_low { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp LS(NON_US_HASH) &kp COMMA>; };
+        dquote: de_dq_high { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp SCROLLLOCK &kp LS(N2) &kp NON_US_BACKSLASH>; };
         rsquote: right_single_quote { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-                             bindings = <&macro_tap &uc 0x2019 0>; };       // ' typographic apostrophe
-        dquote:  double_quote_high { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-                             bindings = <&macro_tap &uc 0x201C 0>; };       // " double high quote
+            bindings = <&macro_tap &kp SCROLLLOCK &kp LS(NON_US_HASH) &kp LS(NON_US_BACKSLASH)>; };
     };
 
     /* Leader-key instance with a curated set of sequences.
