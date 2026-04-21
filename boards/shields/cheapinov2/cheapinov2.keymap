@@ -58,6 +58,19 @@
 #define DE_UDIA LBKT                  /* U = physical [ key -> Ue */
 #define DE_SS   MINUS                 /* ss = physical - key -> ss */
 
+/* Mouse ramp tuning - approximates QMK's MK_KINETIC_SPEED feel (fast start,
+ * moderate top speed, slow wheel). ZMK has no friction/decay, only ramp-up.
+ */
+&mmv {
+    time-to-max-speed-ms = <150>;
+    acceleration-exponent = <1>;
+};
+
+&msc {
+    time-to-max-speed-ms = <600>;
+    acceleration-exponent = <0>;
+};
+
 / {
     macros {
         /* Literal `^` on DE: press dead-key Grave, then Space to resolve. */
