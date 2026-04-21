@@ -1,2 +1,7 @@
 .idea
 default.profraw
+
+# Build artifacts
+*.uf2
+firmware/
+build/
