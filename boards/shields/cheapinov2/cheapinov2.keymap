@@ -395,7 +395,7 @@
 &kp DE_LCBR    &kp LS(N6)     &kp LS(RBKT)   &kp LS(N8)     &kp DE_RCBR       &none  &none  &none  &none  &none
 &kp LS(DOT)    &kp LS(N4)     &kp LS(N5)     &de_circ       &kp RIGHT_BRACKET &trans &trans &trans &trans &trans
 &kp DE_TILD    &kp LS(N1)     &kp DE_AT      &kp DE_HASH    &kp DE_PIPE       &none  &none  &none  &none  &none
-                              &kp LS(N8)     &kp LS(N9)     &kp LS(MINUS)     &trans &trans &trans
+                              &kp LS(N8)     &kp LS(N9)     &kp LS(SLASH)     &trans &trans &trans
             >;
         };
 
