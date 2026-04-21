@@ -87,12 +87,12 @@
 /* Keep caps-word running through dashes/underscores/backspace.
  * On DE-Linux the physical '-' key sends SLASH, and '-' from the NUM layer
  * sends KP_MINUS, so those need to be in the list too.
- * mapped-layers: also honour caps on the CMD layer (for umlauts, clipboard)
- * so caps_word doesn't abort when DEL-thumb is held.
+ * (mapped-layers was tried to keep caps active on CMD - not a valid property
+ * for caps_word in this ZMK version. CMD-layer caps interruption needs
+ * another approach.)
  */
 &caps_word {
     continue-list = <UNDERSCORE MINUS BACKSPACE DELETE KP_MINUS SLASH>;
-    mapped-layers = <0 8>;   // BASE and CMD
 };
 
 / {
