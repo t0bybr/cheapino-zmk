@@ -309,9 +309,13 @@
 
     conditional_layers {
         compatible = "zmk,conditional-layers";
-        tri_layer {
+        fkey_tri {
             if-layers = <SYM_R NUM>;
             then-layer = <FKEY>;
+        };
+        extra_tri {
+            if-layers = <NAV MOUSE>;
+            then-layer = <EXTRA>;
         };
     };
 
