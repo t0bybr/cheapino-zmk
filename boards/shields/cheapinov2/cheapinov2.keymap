@@ -27,15 +27,19 @@
     default-mode = <UC_MODE_LINUX>;
 };
 
-#define BASE   0
-#define MEDIA  1
-#define NAV    2
-#define MOUSE  3
-#define SYM_R  4
-#define NUM    5
-#define FKEY   6
-#define EXTRA  7
-#define CMD    8
+#define BASE       0
+#define MEDIA      1
+#define NAV        2
+#define MOUSE      3
+#define SYM_R      4
+#define NUM        5
+#define FKEY       6
+#define EXTRA      7
+#define CMD        8
+#define MAC_BASE   9
+#define MAC_SYM   10
+#define MAC_NUM   11
+#define MAC_CMD   12
 
 /*
  * Matrix positions (from cheapinov2.dtsi transform):
@@ -69,6 +73,18 @@
 #define DE_ODIA SEMI                  /* O = physical ; key -> Oe */
 #define DE_UDIA LBKT                  /* U = physical [ key -> Ue */
 #define DE_SS   MINUS                 /* ss = physical - key -> ss */
+
+/* macOS German layout uses DIFFERENT Option-key combos for the same symbols.
+ * On macOS both Alt keys = Option, so LA() works for Option.
+ */
+#define DE_LCBR_MAC LA(N8)
+#define DE_RCBR_MAC LA(N9)
+#define DE_LBRC_MAC LA(N5)
+#define DE_RBRC_MAC LA(N6)
+#define DE_BSLS_MAC LA(LS(N7))
+#define DE_AT_MAC   LA(L)
+#define DE_PIPE_MAC LA(N7)
+#define DE_HASH_MAC NON_US_HASH      /* same key on both OSes */
 
 /* Mouse ramp tuning - approximates QMK's MK_KINETIC_SPEED feel (fast start,
  * moderate top speed, slow wheel). ZMK has no friction/decay, only ramp-up.
@@ -165,6 +181,64 @@
             bindings = <&macro_tap &kp LC(LS(U)) &kp N2 &kp N2 &kp N4 &kp N8 &kp SPACE>; };
         rarrow: heavy_right_arrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp LC(LS(U)) &kp N2 &kp N7 &kp N9 &kp C &kp SPACE>; };
+
+        /* ===== macOS native typography (Option-key shortcuts, no compose) =====
+         * Source: QMK keymap.c is_macos branch.
+         * On macOS both Alt keys behave as Option.
+         */
+        mdash_mac: mdash_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(LS(SLASH))>; };          // Option+Shift+- -> —
+        ndash_mac: ndash_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(SLASH)>; };              // Option+- -> –
+        ellip_mac: ellip_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(DOT)>; };                // Option+. -> …
+        dqlo_mac: dqlo_mac   { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(NON_US_BACKSLASH)>; };   // Option+^ -> „
+        dqhi_mac: dqhi_mac   { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(S)>; };                  // Option+S -> ‚
+        dquote_mac: dquote_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(N2)>; };                 // Option+2 -> "
+        rsquote_mac: rsquote_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(LS(NON_US_HASH))>; };    // Option+Shift+# -> ' (U+2019)
+        de_tild_mac: de_tild_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(N) &kp SPACE>; };        // Option+N (dead) + Space -> ~
+
+        /* macOS typography that requires unicode-hex-input just like Linux.
+         * macOS "Unicode Hex Input" layout must be enabled in System Preferences.
+         * If MDM blocks this, Toby falls back to text-replace or skips these chars.
+         */
+        tm_mac: tm_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_press &kp LALT>
+                     , <&macro_tap &kp N2 &kp N1 &kp N2 &kp N2>
+                     , <&macro_release &kp LALT>; };               // Option+2122 -> ™
+        degree_mac: degree_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LA(LS(N8))>; };             // Option+Shift+8 -> °
+        onehalf_mac: onehalf_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_press &kp LALT>
+                     , <&macro_tap &kp N0 &kp N0 &kp B &kp D>
+                     , <&macro_release &kp LALT>; };               // Option+00BD -> ½
+        onequart_mac: onequart_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_press &kp LALT>
+                     , <&macro_tap &kp N0 &kp N0 &kp B &kp C>
+                     , <&macro_release &kp LALT>; };               // Option+00BC -> ¼
+        threequart_mac: threequart_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_press &kp LALT>
+                     , <&macro_tap &kp N0 &kp N0 &kp B &kp E>
+                     , <&macro_release &kp LALT>; };               // Option+00BE -> ¾
+        approx_mac: approx_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_press &kp LALT>
+                     , <&macro_tap &kp N2 &kp N2 &kp N4 &kp N8>
+                     , <&macro_release &kp LALT>; };               // Option+2248 -> ≈
+        rarrow_mac: rarrow_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_press &kp LALT>
+                     , <&macro_tap &kp N2 &kp N7 &kp N9 &kp C>
+                     , <&macro_release &kp LALT>; };               // Option+279C -> ➜
+
+        /* BT-profile + OS-layer switch in one tap. */
+        bt_lin: bt_lin { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &bt BT_SEL 0 &to BASE>; };
+        bt_mac: bt_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &bt BT_SEL 1 &to MAC_BASE>; };
     };
 
     /* Leader-key instance with a curated set of sequences.
@@ -209,6 +283,15 @@
             #binding-cells = <0>;
             tapping-term-ms = <150>;
             bindings = <&lt_leader CMD 0>, <&kp LC(SPACE)>;
+        };
+
+        /* Mac equivalent: same tap-dance but opens MAC_CMD on hold and
+         * fires Cmd+Space (Spotlight) on double-tap. */
+        del_td_mac: del_tap_dance_mac {
+            compatible = "zmk,behavior-tap-dance";
+            #binding-cells = <0>;
+            tapping-term-ms = <150>;
+            bindings = <&lt_leader MAC_CMD 0>, <&kp LG(SPACE)>;
         };
 
         /* Hold-tap: hold = CMD layer, tap = leader behavior (0-cell). */
@@ -536,9 +619,9 @@
         /* EXTRA - tri-layer (MEDIA + MOUSE). Leader + system + BT + debug. */
         EXTRA {
             bindings = <
-&leader     &bootloader  &studio_unlock  &bt BT_CLR  &sys_reset     &none  &none  &none  &none  &none
-&bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2   &bt BT_SEL 3 &bt BT_SEL 4  &out OUT_USB &out OUT_BLE &none &none &none
-&soft_off   &none         &none          &none       &none          &none  &none  &none  &none  &none
+&leader     &bootloader  &studio_unlock  &bt BT_CLR   &sys_reset     &none         &none         &none  &none  &none
+&bt_lin     &bt_mac      &bt BT_SEL 2    &bt BT_SEL 3 &bt BT_SEL 4  &out OUT_USB  &out OUT_BLE  &none  &none  &none
+&soft_off   &to BASE     &to MAC_BASE    &none        &none          &none         &none         &none  &none  &none
                          &trans &trans &trans                       &trans &trans &trans
             >;
         };
@@ -553,6 +636,53 @@
 &ae_m        &trans &ss_m     &trans         &trans         &trans  &trans  &trans       &trans         &oe_m
 &none        &none  &none     &none          &none          &none   &none   &none        &none          &none
                               &kp LC(C) &none &none                 &none   &none        &trans
+            >;
+        };
+
+        /* ===== macOS profile layers =====
+         * Identical keycap positions to the Linux stack, but the symbol and
+         * clipboard bindings use native Option/Cmd shortcuts so no compose
+         * key or Unicode Hex Input on macOS is required (for the compose set;
+         * tm/degree/½/¼/¾/≈/➜ still need Unicode Hex Input enabled).
+         */
+
+        /* MAC_BASE - mirror of BASE, thumbs route to MAC_SYM / MAC_NUM / MAC_CMD. */
+        MAC_BASE {
+            bindings = <
+&kp Q          &kp W          &kp F          &kp P          &kp G           &kp J              &kp L          &kp U          &kp Z          &lit_quot
+&hrm_lg LGUI A &hrm_l LALT R  &hrm_l LCTRL S &hrm_l LSHFT T &kp D           &kp H              &hrm_r RSHFT N &hrm_r RCTRL E &hrm_r RALT I  &hrm_rg RGUI O
+&kp Y          &kp X          &kp C          &kp V          &kp B           &kp K              &kp M          &comma_lt      &dot_gt        &lit_slsh
+                              &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t MAC_SYM RET &lt_bspc MAC_NUM 0 &del_td_mac
+            >;
+        };
+
+        /* MAC_SYM - symbols on mac. Identical layout to SYM_R but Mac Option combos. */
+        MAC_SYM {
+            bindings = <
+&kp DE_LCBR_MAC &kp LS(N6)      &kp LS(RBKT)    &kp LS(N8)      &kp DE_RCBR_MAC &none  &none  &none  &none  &none
+&kp LS(DOT)     &kp LS(N4)      &kp LS(N5)      &de_circ        &kp RIGHT_BRACKET &trans &trans &trans &trans &trans
+&de_tild_mac    &kp LS(N1)      &kp DE_AT_MAC   &kp DE_HASH_MAC &kp DE_PIPE_MAC &none  &none  &none  &none  &none
+                                &kp LS(N8)      &kp LS(N9)      &kp LS(SLASH)   &trans &trans &trans
+            >;
+        };
+
+        /* MAC_NUM - numbers + typography on mac via native Option shortcuts. */
+        MAC_NUM {
+            bindings = <
+&kp DE_LBRC_MAC &kp N7         &kp N8         &kp N9         &kp DE_RBRC_MAC   &mdash_mac  &dquote_mac  &rsquote_mac &tm_mac    &onehalf_mac
+&kp LS(COMMA)   &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &ndash_mac  &dqlo_mac    &dqhi_mac    &kp DE_EURO &onequart_mac
+&de_grv         &kp N1         &kp N2         &kp N3         &kp DE_BSLS_MAC   &approx_mac &degree_mac  &ellip_mac   &rarrow_mac &threequart_mac
+                               &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
+            >;
+        };
+
+        /* MAC_CMD - clipboard + umlauts on mac. Cmd instead of Ctrl+Shift. */
+        MAC_CMD {
+            bindings = <
+&none        &none  &none     &kp LG(V)      &none          &none   &none   &ue_m        &kp LG(C)      &none
+&ae_m        &trans &ss_m     &trans         &trans         &trans  &trans  &trans       &trans         &oe_m
+&none        &none  &none     &none          &none          &none   &none   &none        &none          &none
+                              &kp LG(C) &none &none                 &none   &none        &trans
             >;
         };
     };
