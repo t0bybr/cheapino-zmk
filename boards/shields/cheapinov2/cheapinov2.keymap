@@ -619,10 +619,10 @@
         /* EXTRA - tri-layer (MEDIA + MOUSE). Leader + system + BT + debug. */
         EXTRA {
             bindings = <
-&leader     &bootloader  &studio_unlock  &bt BT_CLR   &sys_reset     &none         &none         &none  &none  &none
-&bt_lin     &bt_mac      &bt BT_SEL 2    &bt BT_SEL 3 &bt BT_SEL 4  &out OUT_USB  &out OUT_BLE  &none  &none  &none
-&soft_off   &to BASE     &to MAC_BASE    &none        &none          &none         &none         &none  &none  &none
-                         &trans &trans &trans                       &trans &trans &trans
+&leader     &bootloader  &studio_unlock  &bt BT_CLR   &sys_reset         &none         &none         &none  &none  &none
+&bt_lin     &bt_mac      &bt BT_SEL 2    &bt BT_SEL 3 &bt BT_SEL 4      &out OUT_USB  &out OUT_BLE  &none  &none  &none
+&soft_off   &to BASE     &to MAC_BASE    &ext_power EP_ON &ext_power EP_TOG &none      &none         &none  &none  &none
+                         &trans &trans &trans                           &trans &trans &trans
             >;
         };
 
