@@ -1,8 +1,15 @@
 #include "cheapinov2.dtsi"
 
-/* Disable the blue status LED on the Nice!Nano (P0.15).
- * Too bright on cheap clones. User can reassign as indicator later if wanted.
+/* Re-enable the on-board LED at P0.15 (physically red on Supermini clones) and
+ * expose it as `indicator-led` for BlueDrink9/zmk-poor-mans-led-indicator.
+ * Blinks on BT profile switch, battery boot, etc.
  */
 &blue_led {
-    status = "disabled";
+    status = "okay";
+};
+
+/ {
+    aliases {
+        indicator-led = &blue_led;
+    };
 };
