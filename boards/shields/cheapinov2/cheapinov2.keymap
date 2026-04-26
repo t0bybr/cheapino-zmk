@@ -600,7 +600,7 @@
         NUM {
             bindings = <
 &kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash  &dquote  &rsquote &tm     &onehalf
-&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &ndash  &dqlo    &dqhi    &kp DE_EURO &onequart
+&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp LS(N0)        &ndash  &dqlo    &dqhi    &kp DE_EURO &onequart
 &de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &approx &degree  &ellip   &rarrow &threequart
                               &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
@@ -670,7 +670,7 @@
         MAC_NUM {
             bindings = <
 &kp DE_LBRC_MAC &kp N7         &kp N8         &kp N9         &kp DE_RBRC_MAC   &mdash_mac  &dquote_mac  &rsquote_mac &tm_mac    &onehalf_mac
-&kp LS(COMMA)   &kp N4         &kp N5         &kp N6         &kp KP_PLUS       &ndash_mac  &dqlo_mac    &dqhi_mac    &kp DE_EURO &onequart_mac
+&kp LS(COMMA)   &kp N4         &kp N5         &kp N6         &kp LS(N0)        &ndash_mac  &dqlo_mac    &dqhi_mac    &kp DE_EURO &onequart_mac
 &de_grv         &kp N1         &kp N2         &kp N3         &kp DE_BSLS_MAC   &approx_mac &degree_mac  &ellip_mac   &rarrow_mac &threequart_mac
                                &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
