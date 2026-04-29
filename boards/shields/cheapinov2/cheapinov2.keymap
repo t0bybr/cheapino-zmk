@@ -267,6 +267,26 @@
             bindings = <&caps_word>;
             layers = <BASE>;
         };
+
+        /* Output toggle: outermost top pinkies (Q = pos 0, lit_quot = pos 9).
+         * Direct USB<->BLE switch without going through EXTRA layer.
+         */
+        combo_out_tog {
+            timeout-ms = <60>;
+            key-positions = <0 9>;
+            bindings = <&out OUT_TOG>;
+            layers = <BASE>;
+        };
+
+        /* EXTRA layer access: inner top keys (G = pos 4, J = pos 5).
+         * Sticky-layer: tap combo, then one EXTRA-layer key fires, layer auto-clears.
+         */
+        combo_extra {
+            timeout-ms = <60>;
+            key-positions = <4 5>;
+            bindings = <&sl EXTRA>;
+            layers = <BASE>;
+        };
     };
 
     keymap {
