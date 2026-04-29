@@ -164,17 +164,17 @@
             bindings = <&kp>, <&kp>;
         };
 
-        /* Thumb Layer-Taps. hold-trigger-on-release + full key list makes
-         * thumb-on-thumb (e.g. SYM+TAB, NAV+CmdTab) decisions deterministic.
+        /* Thumb Layer-Taps. lt_t (MOUSE/SYM_R/CMD) is hold-preferred so that
+         * TAB+RET both fire as Hold simultaneously (enables tri-layer EXTRA).
+         * Other thumb LTs stay balanced because their tap-side keys (SPC, BSP, ESC)
+         * are typed often and would mis-fire as hold otherwise.
          */
         lt_t: layer_tap_thumb {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
-            flavor = "balanced";
+            flavor = "hold-preferred";
             tapping-term-ms = <200>;
             quick-tap-ms = <150>;
-            hold-trigger-key-positions = <KEYS_L KEYS_R THUMBS_L THUMBS_R>;
-            hold-trigger-on-release;
             bindings = <&mo>, <&kp>;
         };
 
@@ -387,14 +387,22 @@
             layers = <BASE>;
         };
 
-        /* EXTRA layer access: inner top keys (G = pos 4, J = pos 5).
-         * Sticky-layer: tap combo, then one EXTRA-layer key fires, layer auto-clears.
+        /* EXTRA layer access via combo, two paths:
+         *   (a) inner top keys G+J - one-handed: hold both, EXTRA active.
+         *   (b) thumbs TAB+RET - intuitive bilateral, mirrors QMK tri-layer.
          */
         combo_extra {
-            timeout-ms = <60>;
+            timeout-ms = <100>;
             key-positions = <4 5>;
-            bindings = <&sl EXTRA>;
-            layers = <BASE>;
+            bindings = <&mo EXTRA>;
+            layers = <BASE EXTRA>;
+        };
+
+        combo_extra_thumbs {
+            timeout-ms = <100>;
+            key-positions = <32 33>;
+            bindings = <&mo EXTRA>;
+            layers = <BASE EXTRA>;
         };
     };
 
