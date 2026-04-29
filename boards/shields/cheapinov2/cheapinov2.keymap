@@ -77,6 +77,32 @@
             tap-ms = <0>;
             bindings = <&macro_tap &kp LS(EQL) &kp SPACE>;
         };
+
+        /* macOS App-Switcher: press Cmd, tap Tab, release Cmd with delays so
+         * macOS registers the modifier before the key (atomic LG(TAB) gets
+         * dropped on some macOS versions over BLE/USB).
+         */
+        app_next: app_switch_next {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <40>;
+            tap-ms = <40>;
+            bindings = <&macro_press &kp LGUI>,
+                       <&macro_tap &kp TAB>,
+                       <&macro_release &kp LGUI>;
+        };
+
+        app_prev: app_switch_prev {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            wait-ms = <40>;
+            tap-ms = <40>;
+            bindings = <&macro_press &kp LGUI>,
+                       <&macro_press &kp LSHFT>,
+                       <&macro_tap &kp TAB>,
+                       <&macro_release &kp LSHFT>,
+                       <&macro_release &kp LGUI>;
+        };
     };
 
     behaviors {
@@ -329,7 +355,7 @@
 &none  &none  &none  &none  &none            &none     &kp PG_UP    &kp UP       &kp PG_DN    &none
 &trans &trans &trans &trans &none            &kp HOME  &kp LEFT     &kp DOWN     &kp RIGHT    &kp END
 &none  &none  &none  &none  &none            &none     &none        &none        &none        &none
-                    &none  &trans &none      &kp LGUI  &kp LG(TAB)  &kp LG(LS(TAB))
+                    &none  &trans &none      &kp LGUI  &app_next  &app_prev
             >;
         };
 
