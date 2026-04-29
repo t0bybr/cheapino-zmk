@@ -2,23 +2,10 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: urob
-      url-base: https://github.com/urob
-    - name: bluedrink9
-      url-base: https://github.com/bluedrink9
   projects:
     - name: zmk
       remote: zmkfirmware
       revision: main
       import: app/west.yml
-    - name: zmk-leader-key
-      remote: urob
-      revision: main
-    - name: zmk-unicode
-      remote: urob
-      revision: main
-    - name: zmk-poor-mans-led-indicator
-      remote: bluedrink9
-      revision: main
   self:
     path: config

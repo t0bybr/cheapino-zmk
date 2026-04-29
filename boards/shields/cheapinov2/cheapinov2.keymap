@@ -10,7 +10,6 @@
  */
 
 #include <behaviors.dtsi>
-#include <behaviors/unicode.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 
@@ -21,11 +20,6 @@
 #define ZMK_POINTING_DEFAULT_SCRL_VAL 10
 #include <dt-bindings/zmk/pointing.h>
 #include <dt-bindings/zmk/outputs.h>
-
-/* Host OS default for unicode input. Switch at runtime via UC_SET_* bindings. */
-&uc {
-    default-mode = <UC_MODE_LINUX>;
-};
 
 #define BASE       0
 #define MEDIA      1
@@ -161,26 +155,9 @@
         rsquote: right_single_quote { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp SCROLLLOCK &kp LS(NON_US_HASH) &kp LS(NON_US_BACKSLASH)>; };
 
-        /* Further typography via compose (Scroll-Lock = Compose on DE-Linux). */
-        tm: trademark { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp SCROLLLOCK &kp T &kp M>; };
+        /* ° via compose (Scroll-Lock = Compose on DE-Linux). */
         degree: degree_sign { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp SCROLLLOCK &kp O &kp O>; };
-        onehalf: onehalf { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp SCROLLLOCK &kp N1 &kp N2>; };
-        onequart: onequart { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp SCROLLLOCK &kp N1 &kp N4>; };
-        threequart: threequart { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp SCROLLLOCK &kp N3 &kp N4>; };
-
-        /* No standard compose for ≈ or ➜. Use Linux IBus/GTK unicode-hex input
-         * (Ctrl+Shift+U, hex, Space). If it doesn't work, add to ~/.XCompose
-         * or enable IBus.
-         */
-        approx: approx_equal { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp LC(LS(U)) &kp N2 &kp N2 &kp N4 &kp N8 &kp SPACE>; };
-        rarrow: heavy_right_arrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp LC(LS(U)) &kp N2 &kp N7 &kp N9 &kp C &kp SPACE>; };
 
         /* ===== macOS native typography (Option-key shortcuts, no compose) =====
          * Source: QMK keymap.c is_macos branch.
@@ -203,106 +180,15 @@
         de_tild_mac: de_tild_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp LA(N) &kp SPACE>; };        // Option+N (dead) + Space -> ~
 
-        /* macOS typography that requires unicode-hex-input just like Linux.
-         * macOS "Unicode Hex Input" layout must be enabled in System Preferences.
-         * If MDM blocks this, Toby falls back to text-replace or skips these chars.
-         */
-        tm_mac: tm_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_press &kp LALT>
-                     , <&macro_tap &kp N2 &kp N1 &kp N2 &kp N2>
-                     , <&macro_release &kp LALT>; };               // Option+2122 -> ™
+        /* macOS native ° = Shift+^ (HID GRAVE on macOS-DE). */
         degree_mac: degree_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp LA(LS(N8))>; };             // Option+Shift+8 -> °
-        onehalf_mac: onehalf_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_press &kp LALT>
-                     , <&macro_tap &kp N0 &kp N0 &kp B &kp D>
-                     , <&macro_release &kp LALT>; };               // Option+00BD -> ½
-        onequart_mac: onequart_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_press &kp LALT>
-                     , <&macro_tap &kp N0 &kp N0 &kp B &kp C>
-                     , <&macro_release &kp LALT>; };               // Option+00BC -> ¼
-        threequart_mac: threequart_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_press &kp LALT>
-                     , <&macro_tap &kp N0 &kp N0 &kp B &kp E>
-                     , <&macro_release &kp LALT>; };               // Option+00BE -> ¾
-        approx_mac: approx_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_press &kp LALT>
-                     , <&macro_tap &kp N2 &kp N2 &kp N4 &kp N8>
-                     , <&macro_release &kp LALT>; };               // Option+2248 -> ≈
-        rarrow_mac: rarrow_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_press &kp LALT>
-                     , <&macro_tap &kp N2 &kp N7 &kp N9 &kp C>
-                     , <&macro_release &kp LALT>; };               // Option+279C -> ➜
+            bindings = <&macro_tap &kp LS(GRAVE)>; };
 
         /* BT-profile + OS-layer switch in one tap. */
         bt_lin: bt_lin { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &bt BT_SEL 0 &to BASE>; };
         bt_mac: bt_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &bt BT_SEL 1 &to MAC_BASE>; };
-    };
-
-    /* Leader-key instance with a curated set of sequences.
-     * See urob/zmk-leader-key. Sequences are keycode-based.
-     */
-    behaviors {
-        leader: leader_key {
-            compatible = "zmk,behavior-leader-key";
-            #binding-cells = <0>;
-            ignore-keys = <LSHFT RSHFT>;  // pass shift through, don't terminate
-            /* Unicode-typography */
-            sq_md  { sequence = <M D>;       bindings = <&mdash>; };
-            sq_nd  { sequence = <N D>;       bindings = <&ndash>; };
-            sq_el  { sequence = <E L>;       bindings = <&ellip>; };
-            sq_dql { sequence = <D Q L>;     bindings = <&dqlo>; };
-            sq_dqh { sequence = <D Q H>;     bindings = <&dqhi>; };
-            /* Output + Bluetooth profile management */
-            sq_usb { sequence = <O U S B>;   bindings = <&out OUT_USB>; };
-            sq_ble { sequence = <O B L E>;   bindings = <&out OUT_BLE>; };
-            sq_bt0 { sequence = <B N0>;      bindings = <&bt BT_SEL 0>; };
-            sq_bt1 { sequence = <B N1>;      bindings = <&bt BT_SEL 1>; };
-            sq_bt2 { sequence = <B N2>;      bindings = <&bt BT_SEL 2>; };
-            sq_btc { sequence = <B C>;       bindings = <&bt BT_CLR>; };
-            /* System */
-            sq_boot  { sequence = <B O O T>;     bindings = <&bootloader>; };
-            sq_reset { sequence = <R E S E T>;   bindings = <&sys_reset>; };
-            sq_stud  { sequence = <S T U D>;     bindings = <&studio_unlock>; };
-            /* OS switch for unicode input */
-            sq_oslx  { sequence = <O S L>;       bindings = <&uc UC_SET_LINUX>; };
-            sq_osmac { sequence = <O S M>;       bindings = <&uc UC_SET_MACOS>; };
-            sq_oswin { sequence = <O S W>;       bindings = <&uc UC_SET_WIN_COMPOSE>; };
-        };
-
-        /* Right-outer thumb tap-dance (QMK-style DEL_FKY semantics):
-         *   1x tap  -> Leader key
-         *   2x tap  -> Ctrl+Space (app-leader shortcut)
-         *   hold    -> CMD layer
-         * DEL itself remains reachable via Shift+Backspace (bspc_del mod-morph).
-         */
-        del_td: del_tap_dance {
-            compatible = "zmk,behavior-tap-dance";
-            #binding-cells = <0>;
-            tapping-term-ms = <150>;
-            bindings = <&lt_leader CMD 0>, <&kp LC(SPACE)>;
-        };
-
-        /* Mac equivalent: same tap-dance but opens MAC_CMD on hold and
-         * fires Cmd+Space (Spotlight) on double-tap. */
-        del_td_mac: del_tap_dance_mac {
-            compatible = "zmk,behavior-tap-dance";
-            #binding-cells = <0>;
-            tapping-term-ms = <150>;
-            bindings = <&lt_leader MAC_CMD 0>, <&kp LG(SPACE)>;
-        };
-
-        /* Hold-tap: hold = CMD layer, tap = leader behavior (0-cell). */
-        lt_leader: layer_tap_leader {
-            compatible = "zmk,behavior-hold-tap";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <300>;
-            quick-tap-ms = <150>;
-            bindings = <&mo>, <&leader>;
-        };
     };
 
     behaviors {
@@ -547,7 +433,7 @@
 &kp Q          &kp W          &kp F          &kp P          &kp G           &kp J              &kp L          &kp U          &kp Z          &lit_quot
 &hrm_lg LGUI A &hrm_l LALT R  &hrm_l LCTRL S &hrm_l LSHFT T &kp D           &kp H              &hrm_r RSHFT N &hrm_r RCTRL E &hrm_r RALT I  &hrm_rg RGUI O
 &kp Y          &kp X          &kp C          &kp V          &kp B           &kp K              &kp M          &comma_lt      &dot_gt        &lit_slsh
-                              &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t SYM_R RET &lt_bspc NUM 0 &del_td
+                              &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t SYM_R RET &lt_bspc NUM 0 &lt_t CMD DEL
             >;
         };
 
@@ -599,9 +485,9 @@
          */
         NUM {
             bindings = <
-&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash  &dquote  &rsquote &tm     &onehalf
-&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp LS(N0)        &ndash  &dqlo    &dqhi    &kp DE_EURO &onequart
-&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &approx &degree  &ellip   &rarrow &threequart
+&kp DE_LBRC    &kp N7         &kp N8         &kp N9         &kp DE_RBRC       &mdash  &dquote  &rsquote &none           &none
+&kp LS(COMMA)  &kp N4         &kp N5         &kp N6         &kp LS(N0)        &ndash  &dqlo    &dqhi    &kp DE_EURO     &none
+&de_grv        &kp N1         &kp N2         &kp N3         &kp DE_BSLS       &none   &degree  &ellip   &none           &none
                               &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
         };
@@ -619,7 +505,7 @@
         /* EXTRA - tri-layer (MEDIA + MOUSE). Leader + system + BT + debug. */
         EXTRA {
             bindings = <
-&leader     &bootloader  &studio_unlock  &bt BT_CLR   &sys_reset     &none         &none         &none  &none  &none
+&none       &bootloader  &studio_unlock  &bt BT_CLR   &sys_reset     &none         &none         &none  &none  &none
 &bt_lin     &bt_mac      &bt BT_SEL 2    &bt BT_SEL 3 &bt BT_SEL 4  &out OUT_USB  &out OUT_BLE  &none  &none  &none
 &soft_off   &to BASE     &to MAC_BASE    &none        &none          &none         &none         &none  &none  &none
                          &trans &trans &trans                       &trans &trans &trans
@@ -652,7 +538,7 @@
 &kp Q          &kp W          &kp F          &kp P          &kp G           &kp J              &kp L          &kp U          &kp Z          &lit_quot
 &hrm_lg LGUI A &hrm_l LALT R  &hrm_l LCTRL S &hrm_l LSHFT T &kp D           &kp H              &hrm_r RSHFT N &hrm_r RCTRL E &hrm_r RALT I  &hrm_rg RGUI O
 &kp Y          &kp X          &kp C          &kp V          &kp B           &kp K              &kp M          &comma_lt      &dot_gt        &lit_slsh
-                              &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t MAC_SYM RET &lt_bspc MAC_NUM 0 &del_td_mac
+                              &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t MAC_SYM RET &lt_bspc MAC_NUM 0 &lt_t MAC_CMD DEL
             >;
         };
 
@@ -669,9 +555,9 @@
         /* MAC_NUM - numbers + typography on mac via native Option shortcuts. */
         MAC_NUM {
             bindings = <
-&kp DE_LBRC_MAC &kp N7         &kp N8         &kp N9         &kp DE_RBRC_MAC   &mdash_mac  &dquote_mac  &rsquote_mac &tm_mac    &onehalf_mac
-&kp LS(COMMA)   &kp N4         &kp N5         &kp N6         &kp LS(N0)        &ndash_mac  &dqlo_mac    &dqhi_mac    &kp DE_EURO &onequart_mac
-&de_grv         &kp N1         &kp N2         &kp N3         &kp DE_BSLS_MAC   &approx_mac &degree_mac  &ellip_mac   &rarrow_mac &threequart_mac
+&kp DE_LBRC_MAC &kp N7         &kp N8         &kp N9         &kp DE_RBRC_MAC   &mdash_mac  &dquote_mac  &rsquote_mac &none           &none
+&kp LS(COMMA)   &kp N4         &kp N5         &kp N6         &kp LS(N0)        &ndash_mac  &dqlo_mac    &dqhi_mac    &kp DE_EURO     &none
+&de_grv         &kp N1         &kp N2         &kp N3         &kp DE_BSLS_MAC   &none       &degree_mac  &ellip_mac   &none           &none
                                &key_repeat    &kp N0         &kp KP_MINUS      &trans &trans &trans
             >;
         };

@@ -1,14 +1,6 @@
 #include "cheapinov2.dtsi"
 #include <zephyr/dt-bindings/i2c/i2c.h>
 
-/* Re-enable the on-board LED at P0.15 (physically red on Supermini clones) and
- * expose it as `indicator-led` for BlueDrink9/zmk-poor-mans-led-indicator.
- * Blinks on BT profile switch, battery boot, etc.
- */
-&blue_led {
-    status = "okay";
-};
-
 /* I2C0 on P1.01 (SDA) + P1.02 (SCL) - the extra THT pins on the
  * Nologo/ICBbuy Supermini nRF52840 clone. SSD1306 OLED 128x32 at 0x3C.
  */
@@ -56,9 +48,5 @@
 / {
     chosen {
         zephyr,display = &oled;
-    };
-
-    aliases {
-        indicator-led = &blue_led;
     };
 };
