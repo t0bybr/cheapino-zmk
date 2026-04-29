@@ -238,7 +238,8 @@
             compatible = "zmk,behavior-tri-state";
             #binding-cells = <0>;
             bindings = <&kt LGUI>, <&kp TAB>, <&kt LGUI>;
-            ignored-key-positions = <34 35>;
+            /* HRMs (mod-keys) and the right thumbs must not interrupt swap. */
+            ignored-key-positions = <10 11 12 13 16 17 18 19 33 34 35>;
         };
     };
 
@@ -342,7 +343,7 @@
 &none  &none  &none  &none  &none            &none     &kp PG_UP    &kp UP       &kp PG_DN    &none
 &trans &trans &trans &trans &none            &kp HOME  &kp LEFT     &kp DOWN     &kp RIGHT    &kp END
 &none  &none  &none  &none  &none            &none     &none        &none        &none        &none
-                    &none  &trans &none      &swap     &kp TAB      &kp LS(TAB)
+                    &none  &trans &none      &swap     &kp LG(TAB)  &kp LG(LS(TAB))
             >;
         };
 
