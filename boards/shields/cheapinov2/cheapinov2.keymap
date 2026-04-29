@@ -308,7 +308,7 @@
         BASE {
             bindings = <
 &kp Q          &kp W          &kp F          &kp P          &kp G           &kp J              &kp L          &kp U          &kp Z          &lit_quot
-&hrm_l LALT A  &hrm_l LCTRL R &hrm_lg LGUI S &hrm_l LSHFT T &kp D           &kp H              &hrm_r RSHFT N &hrm_rg RGUI E &hrm_r RCTRL I &hrm_r RALT O
+&hrm_l LCTRL A &hrm_l LALT R  &hrm_lg LGUI S &hrm_l LSHFT T &kp D           &kp H              &hrm_r RSHFT N &hrm_rg RGUI E &hrm_r RALT I  &hrm_r RCTRL O
 &kp Y          &kp X          &kp C          &kp V          &kp B           &kp K              &kp M          &comma_lt      &dot_gt        &lit_slsh
                               &lt_esc MEDIA 0 &lt_spc NAV SPACE &lt_t MOUSE TAB  &lt_t SYM_R RET &lt_bspc NUM 0 &lt_t CMD DEL
             >;
