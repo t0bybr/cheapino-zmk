@@ -228,6 +228,18 @@
             mods = <(MOD_LSFT|MOD_RSFT)>;
             keep-mods = <0>;
         };
+
+        /* App-switcher (tri-state, urob/zmk-tri-state module).
+         * First tap: press LGUI + tap TAB (open app-switcher).
+         * Subsequent taps of swap, or tap of NUM/DEL thumbs (ignored): more Tab.
+         * Layer change (NAV released) or other key: release LGUI -> commit switch.
+         */
+        swap: app_switcher {
+            compatible = "zmk,behavior-tri-state";
+            #binding-cells = <0>;
+            bindings = <&kt LGUI>, <&kp TAB>, <&kt LGUI>;
+            ignored-key-positions = <34 35>;
+        };
     };
 
     conditional_layers {
@@ -330,7 +342,7 @@
 &none  &none  &none  &none  &none            &none     &kp PG_UP    &kp UP       &kp PG_DN    &none
 &trans &trans &trans &trans &none            &kp HOME  &kp LEFT     &kp DOWN     &kp RIGHT    &kp END
 &none  &none  &none  &none  &none            &none     &none        &none        &none        &none
-                    &none  &trans &none      &kp LGUI  &kp TAB  &kp LS(TAB)
+                    &none  &trans &none      &swap     &kp TAB      &kp LS(TAB)
             >;
         };
 
