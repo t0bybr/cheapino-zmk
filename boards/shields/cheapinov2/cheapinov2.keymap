@@ -134,51 +134,41 @@
             bindings = <&kp>, <&kp>;
         };
 
-        /* Thumb Layer-Tap with balanced flavor (hold-on-other-key-press style).
-         * Used for all thumbs EXCEPT SPC_NAV.
+        /* Thumb Layer-Tap. balanced + 200ms term so layer hold fires reliably
+         * on opposite-hand keypress without waiting too long.
          */
         lt_t: layer_tap_thumb {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <300>;
+            tapping-term-ms = <200>;
             quick-tap-ms = <150>;
             bindings = <&mo>, <&kp>;
         };
 
-        /* SPC_NAV: tap-preferred so single-space never accidentally fires NAV.
-         * Quick-tap enables double-tap-hold = space repeat.
-         */
         lt_spc: layer_tap_space {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
-            flavor = "tap-preferred";
-            tapping-term-ms = <300>;
+            flavor = "balanced";
+            tapping-term-ms = <200>;
             quick-tap-ms = <200>;
             bindings = <&mo>, <&kp>;
         };
 
-        /* BSP_NUM: tap=Backspace (Shift=Delete), hold=NUM layer.
-         * ZMK hold-tap requires 2 binding-cells; second param ignored by tap side.
-         * Invoke as: &lt_bspc NUM 0
-         */
         lt_bspc: layer_tap_bspc {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <300>;
+            tapping-term-ms = <200>;
             quick-tap-ms = <150>;
             bindings = <&mo>, <&bspc_del>;
         };
 
-        /* ESC_MED: tap=Escape (Shift=Tilde), hold=MEDIA layer.
-         * Invoke as: &lt_esc MEDIA 0
-         */
         lt_esc: layer_tap_esc {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
-            tapping-term-ms = <300>;
+            tapping-term-ms = <200>;
             quick-tap-ms = <150>;
             bindings = <&mo>, <&esc_tilde>;
         };
@@ -267,6 +257,14 @@
             timeout-ms = <50>;
             key-positions = <20 21>;
             bindings = <&kp LC(X)>;
+            layers = <BASE>;
+        };
+
+        /* Caps-Word: both shift HRMs (T = pos 13, N = pos 16) */
+        combo_caps_word {
+            timeout-ms = <50>;
+            key-positions = <13 16>;
+            bindings = <&caps_word>;
             layers = <BASE>;
         };
     };
