@@ -177,34 +177,48 @@
     };
 
     behaviors {
-        /* ===== R3/R2-Thumb tap = RET/BSPC, mit gehaltenem Alt = TAB / Shift+TAB =====
-         * Loest den Konflikt, dass Alt auf LO-Thumb (Pos 30) liegt und Tab
-         * auf L3-Thumb (Pos 32) - beide links. Mit Alt gehalten triggern
-         * die rechten Thumbs (Pos 33/34) Alt+Tab / Alt+Shift+Tab.
-         * keep-mods explizit auf LALT|RALT, sonst nimmt ZMK den Trigger-Mod
-         * beim Fire weg (Default keep-mods = 0) und es kaeme nur TAB ohne Alt.
+        /* ===== Window-/App-Navigation auf rechten Thumbs =====
+         * Alt (Linux/Win) bzw. LGUI (Mac) liegen auf LO-Thumb (Pos 30 LALT)
+         * bzw. L3-Thumb (Pos 32 LCTRL/LGUI) - beide links. Mit gehaltenem
+         * Mod triggern die rechten Thumbs cross-handed App-/Window-Switch:
+         *   R1 (Pos 35, DEL)  -> Mod+TAB        (App vorwaerts)
+         *   R3 (Pos 33, RET)  -> Mod+Shift+TAB  (App rueckwaerts)
+         *   R2 (Pos 34, BSPC) -> Mod+GRAVE      (Window innerhalb App)
+         *
+         * Mods-Mask deckt Alt + GUI ab, damit Linux UND Mac funktionieren.
+         * keep-mods preserviert den User-Mod, sonst kaeme nur die Tap-Action
+         * ohne Modifier durch.
          */
-        ret_alttab: ret_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp RET>, <&kp TAB>;
-            mods = <(MOD_LALT|MOD_RALT)>;
-            keep-mods = <(MOD_LALT|MOD_RALT)>; };
-        bspc_alttab: bspc_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp BSPC>, <&kp LS(TAB)>;
-            mods = <(MOD_LALT|MOD_RALT)>;
-            keep-mods = <(MOD_LALT|MOD_RALT)>; };
+        ret_revtab: ret_revtab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp RET>, <&kp LS(TAB)>;
+            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
+            keep-mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>; };
+        bspc_appwin: bspc_appwin { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp BSPC>, <&kp GRAVE>;
+            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
+            keep-mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>; };
+        del_alttab: del_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DEL>, <&kp TAB>;
+            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
+            keep-mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>; };
 
         /* Custom layer-tap mit mod-morph als tap-binding. ZMK-builtin &lt
-         * akzeptiert nur &kp als tap, daher zwei lokale Hold-Tap-Wrapper.
+         * akzeptiert nur &kp als tap, daher drei lokale Hold-Tap-Wrapper.
          */
-        lt_ret_alttab: lt_ret_alttab {
+        lt_ret_revtab: lt_ret_revtab {
             compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
             flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&ret_alttab>;
+            bindings = <&mo>, <&ret_revtab>;
         };
-        lt_bspc_alttab: lt_bspc_alttab {
+        lt_bspc_appwin: lt_bspc_appwin {
             compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
             flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&bspc_alttab>;
+            bindings = <&mo>, <&bspc_appwin>;
+        };
+        lt_del_alttab: lt_del_alttab {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
+            bindings = <&mo>, <&del_alttab>;
         };
 
         /* ===== BASE Mod-Morphs ===== */
@@ -526,7 +540,7 @@
 &kp Q     &kp W     &kp F     &kp P     &kp G              &kp J          &kp L          &kp U     &kp Z     &lit_quot
 &kp A     &kp R     &kp S     &kp T     &kp D              &kp H          &kp N          &kp E     &kp I     &kp O
 &kp Y     &kp X     &kp C     &kp V     &kp B              &kp K          &kp M          &comma_lt &dot_gt   &lit_slsh
-                    &mt LALT ESC  &mt LSHFT SPACE  &mt LCTRL TAB    &lt_ret_alttab L1 0  &lt_bspc_alttab L2 0  &lt CMD DEL
+                    &mt LALT ESC  &mt LSHFT SPACE  &mt LCTRL TAB    &lt_ret_revtab L1 0  &lt_bspc_appwin L2 0  &lt_del_alttab CMD 0
             >;
         };
 
