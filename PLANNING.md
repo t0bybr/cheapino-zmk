@@ -99,13 +99,16 @@ Mod-Morphs (alle reagieren auf `MOD_LSFT`):
 | 28  | `C_VOL_UP` | `&none`         |
 | 29  | `C_NEXT`   | `&none`         |
 
-**Maus-Klicks via Combos in L1** (statt Mod-Morph-Variante):
+**Combos in L1** mit Mod-Morph-Bindings (alle `layers = <L1>`):
 
-| Tasten | Pos   | Output         | Notes                     |
-| ------ | ----- | -------------- | ------------------------- |
-| N + E  | 16+17 | `&mkp LCLK`    | Linksklick, `layers = <L1>` |
-| E + I  | 17+18 | `&mkp RCLK`    | Rechtsklick, `layers = <L1>` |
-| M + ,  | 26+27 | `&mkp MCLK`    | Mittelklick, `layers = <L1>` |
+| Tasten | Pos   | ohne MOD     | mit MOD (Shift) | Mod-Morph-Name |
+| ------ | ----- | ------------ | --------------- | -------------- |
+| N + E  | 16+17 | `&kp C_PP`   | `&mkp LCLK`     | `pp_lclk_mm`   |
+| E + I  | 17+18 | `&kp C_STOP` | `&mkp RCLK`     | `stop_rclk_mm` |
+| M + ,  | 26+27 | `&none`      | `&mkp MCLK`     | `mclk_mm`      |
+
+Die Mod-Morph-Behaviors (`mods = <(MOD_LSFT|MOD_RSFT)>`) gehören in den `behaviors`-Block.
+Die Combos referenzieren sie via `bindings = <&pp_lclk_mm>` etc.
 
 **MOD-Mechanik (vereinfacht)**: MOD ist einfach Shift, gehalten via **L2-Thumb (Pos 31)**.
 Da alle Thumbs in L1/L2 `&trans` sind, fällt Pos 31 auf BASE = `&mt LSHFT SPACE` durch.
@@ -278,8 +281,11 @@ conditional_layers {
    - `combo_copy` (X+C), `combo_paste` (C+V), `combo_cut` (Z+X) — Linux mit `LC(...)`
    - `combo_caps` umbau auf Spc+Bspc (Pos 31+34) statt T+N
    - Neu: `combo_meta` (Pos 31+32, slow-release) für LGUI
-   - Neu: `combo_lclk` (N+E, layers = `<L1>`), `combo_rclk` (E+I, layers = `<L1>`),
-     `combo_mclk` (M+,, layers = `<L1>`)
+   - Neu: drei mod-morph-Behaviors (`pp_lclk_mm`, `stop_rclk_mm`, `mclk_mm`) und
+     drei Combos in L1 die diese als Binding nutzen:
+     - N+E (16+17) → `pp_lclk_mm`: ohne Shift = `C_PP`, mit Shift = `LCLK`
+     - E+I (17+18) → `stop_rclk_mm`: ohne Shift = `C_STOP`, mit Shift = `RCLK`
+     - M+, (26+27) → `mclk_mm`: ohne Shift = `&none`, mit Shift = `MCLK`
    - Mac-Varianten der Clipboard-Combos mit `layers = <MAC>` filtern (LG statt LC).
 7. **Layer BASE neu**: HRMs raus, neue Thumbs (`&mt LALT ESC`, `&mt LSHFT SPACE`,
    `&mt LCTRL TAB`, `&lt L1 RET`, `&lt_bspc L2 0`, `&lt CMD DEL`).
@@ -321,7 +327,9 @@ conditional_layers {
 - [ ] BASE: META-Combo (L2+L3 thumbs)
 - [ ] L1: Pfeile + System-Tasten
 - [ ] L1: MOD-Variante (L2-Thumb = Shift halten) → Scroll/MMV
-- [ ] L1: Maus-Klicks via Combos N+E (LCLK), E+I (RCLK), M+, (MCLK)
+- [ ] L1: N+E ohne Shift = Play/Pause, mit Shift = LCLK
+- [ ] L1: E+I ohne Shift = Stop, mit Shift = RCLK
+- [ ] L1: M+, ohne Shift = nichts, mit Shift = MCLK
 - [ ] L2: Ziffern auf der mittleren Reihe
 - [ ] L2: F-Keys via MOD (L2-Thumb halten)
 - [ ] L2: Symbole rechts
