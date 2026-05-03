@@ -177,6 +177,33 @@
     };
 
     behaviors {
+        /* ===== R3/R2-Thumb tap = RET/BSPC, mit gehaltenem Alt = TAB / Shift+TAB =====
+         * Loest den Konflikt, dass Alt auf LO-Thumb (Pos 30) liegt und Tab
+         * auf L3-Thumb (Pos 32) - beide links. Mit Alt gehalten triggern
+         * die rechten Thumbs (Pos 33/34) Alt+Tab / Alt+Shift+Tab.
+         * keep-mods Default = alle Mods bleiben aktiv -> User-Alt + TAB.
+         */
+        ret_alttab: ret_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp RET>, <&kp TAB>;
+            mods = <(MOD_LALT|MOD_RALT)>; };
+        bspc_alttab: bspc_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp BSPC>, <&kp LS(TAB)>;
+            mods = <(MOD_LALT|MOD_RALT)>; };
+
+        /* Custom layer-tap mit mod-morph als tap-binding. ZMK-builtin &lt
+         * akzeptiert nur &kp als tap, daher zwei lokale Hold-Tap-Wrapper.
+         */
+        lt_ret_alttab: lt_ret_alttab {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
+            bindings = <&mo>, <&ret_alttab>;
+        };
+        lt_bspc_alttab: lt_bspc_alttab {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
+            bindings = <&mo>, <&bspc_alttab>;
+        };
+
         /* ===== BASE Mod-Morphs ===== */
         ae_m: umlaut_ae { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp DE_ADIA>, <&kp LS(DE_ADIA)>;
@@ -341,8 +368,11 @@
         amp_pct: amp_pct { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp LS(N6)>, <&kp LS(N5)>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
+        /* DE: '-' liegt auf der HID-SLASH-Taste (US '/'), '_' = LS(SLASH).
+         * MINUS waere auf DE 'ss' und LS(MINUS) waere '?'.
+         */
         mins_uscore: mins_uscore { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp MINUS>, <&kp LS(MINUS)>;
+            bindings = <&kp SLASH>, <&kp LS(SLASH)>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
         eq_plus: eq_plus { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp LS(N0)>, <&kp RBKT>;
@@ -493,7 +523,7 @@
 &kp Q     &kp W     &kp F     &kp P     &kp G              &kp J          &kp L          &kp U     &kp Z     &lit_quot
 &kp A     &kp R     &kp S     &kp T     &kp D              &kp H          &kp N          &kp E     &kp I     &kp O
 &kp Y     &kp X     &kp C     &kp V     &kp B              &kp K          &kp M          &comma_lt &dot_gt   &lit_slsh
-                    &mt LALT ESC  &mt LSHFT SPACE  &mt LCTRL TAB    &lt L1 RET     &lt L2 BSPC    &lt CMD DEL
+                    &mt LALT ESC  &mt LSHFT SPACE  &mt LCTRL TAB    &lt_ret_alttab L1 0  &lt_bspc_alttab L2 0  &lt CMD DEL
             >;
         };
 
