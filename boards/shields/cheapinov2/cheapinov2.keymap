@@ -181,14 +181,17 @@
          * Loest den Konflikt, dass Alt auf LO-Thumb (Pos 30) liegt und Tab
          * auf L3-Thumb (Pos 32) - beide links. Mit Alt gehalten triggern
          * die rechten Thumbs (Pos 33/34) Alt+Tab / Alt+Shift+Tab.
-         * keep-mods Default = alle Mods bleiben aktiv -> User-Alt + TAB.
+         * keep-mods explizit auf LALT|RALT, sonst nimmt ZMK den Trigger-Mod
+         * beim Fire weg (Default keep-mods = 0) und es kaeme nur TAB ohne Alt.
          */
         ret_alttab: ret_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp RET>, <&kp TAB>;
-            mods = <(MOD_LALT|MOD_RALT)>; };
+            mods = <(MOD_LALT|MOD_RALT)>;
+            keep-mods = <(MOD_LALT|MOD_RALT)>; };
         bspc_alttab: bspc_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp BSPC>, <&kp LS(TAB)>;
-            mods = <(MOD_LALT|MOD_RALT)>; };
+            mods = <(MOD_LALT|MOD_RALT)>;
+            keep-mods = <(MOD_LALT|MOD_RALT)>; };
 
         /* Custom layer-tap mit mod-morph als tap-binding. ZMK-builtin &lt
          * akzeptiert nur &kp als tap, daher zwei lokale Hold-Tap-Wrapper.
