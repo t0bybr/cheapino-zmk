@@ -160,8 +160,12 @@
             bindings = <&macro_tap &bt BT_SEL 0>; };
         bt_and: bt_and { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &bt BT_SEL 1>; };
+        /* BT-Profile 2 ohne automatisches MAC-Toggle. Layout wird separat
+         * via &tog MAC auf L1 umgeschaltet, sonst driftet der State wenn
+         * man bt_mac doppelt antippt.
+         */
         bt_mac: bt_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 2 &tog MAC>; };
+            bindings = <&macro_tap &bt BT_SEL 2>; };
 
         /* Profile selektieren + dessen Bond loeschen (BT_CLR clears active profile). */
         bt_clr_0: bt_clr_0 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
@@ -551,7 +555,7 @@
          */
         L1 {
             bindings = <
-&soft_off  &studio_unlock &none      &bootloader  &sys_reset       &none      &pgup_mm  &up_mm   &pgdn_mm &none
+&soft_off  &studio_unlock &tog MAC   &bootloader  &sys_reset       &none      &pgup_mm  &up_mm   &pgdn_mm &none
 &bt0_mm    &bt1_mm        &bt2_mm    &bt3_mm      &bt4_mm          &home_mm   &left_mm  &down_mm &right_mm &end_mm
 &none      &none          &kp PSCRN  &none        &out_tog         &kp C_PREV &kp C_VOL_DN &kp C_MUTE &kp C_VOL_UP &kp C_NEXT
                           &trans     &trans       &trans           &trans     &trans       &trans
@@ -582,7 +586,7 @@
         };
 
         /*
-         * MAC - Sentinel-Layer, getoggelt via bt_mac. Ueberlagert BASE,
+         * MAC - Sentinel-Layer, getoggelt via &tog MAC auf L1 Pos 2. Ueberlagert BASE,
          * ueberschreibt nur OS-spezifisches: L3-Thumb (Pos 32) wird Cmd statt Ctrl.
          * Clipboard- und META-Combos sind ueber separate &kp LG(...)-Combos
          * mit `layers = <MAC>` gefiltert (siehe combos block).
