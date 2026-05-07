@@ -1,16 +1,19 @@
 /*
  * Cheapino v2 - Toby Keymap (ZMK Port)
  *
- * 4-Layer-Aufbau:
+ * Layer-Aufbau:
  *   BASE      - Colemak, plain (keine HRMs), Mod-Tap/Layer-Tap auf Thumbs
- *   L1        - NAV/MEDIA/MOUSE kombiniert (System+BT links, Pfeile+Vol rechts)
- *   L2        - NUM/F-Keys/SYM kombiniert (Mod-Morph fuer F-Variante via Shift)
- *   CMD       - nur Umlaute (ae/oe/ue/ss)
- *   MAC       - Sentinel-Layer, getoggelt via BT_SEL 2; ueberlagert BASE
- *   MAC_L2    - conditional ueber L2+MAC; ueberlagert L2 mit Mac-Symbolen
+ *   L1        - NAV (rechts) + MEDIA (links); via R3-Thumb hold
+ *   L2        - MOUSE (Bewegung+Scroll rechts, Klicks rechte Thumbs); via L1 Pos 30 hold
+ *   L3        - SYSTEM (BT, Studio, Reset, Output, MAC-Toggle, &sl LEADER); via L1 Pos 32 hold
+ *   L4        - NUM/F-Keys/SYM kombiniert (Mod-Morph fuer F-Variante via Shift); via R2-Thumb hold
+ *   CMD       - nur Umlaute (ae/oe/ue/ss); via R1-Thumb hold
+ *   MAC       - Sentinel-Layer, getoggelt via L3; ueberlagert BASE
+ *   MAC_L4    - conditional ueber L4+MAC; ueberlagert L4 mit Mac-Symbolen
+ *   LEADER    - sticky-layer fuer TTY-Switch und weitere Sequenzen
  *
  * MOD = LSHFT, gehalten via L2-Thumb (Pos 31 BASE = &mt LSHFT SPACE).
- * Auf L1/L2/CMD sind alle Thumbs &trans, daher faellt Pos 31 auf BASE durch.
+ * Auf hoeheren Layern sind die Thumbs &trans, daher faellt Pos 31 auf BASE durch.
  *
  * Annahme: deutsches Layout auf dem Host (Linux/Win DIN 2137 oder macOS DE).
  */
@@ -30,9 +33,12 @@
 #define BASE     0
 #define L1       1
 #define L2       2
-#define CMD      3
-#define MAC      4
-#define MAC_L2   5
+#define L3       3
+#define L4       4
+#define CMD      5
+#define MAC      6
+#define MAC_L4   7
+#define LEADER   8
 
 /*
  * Matrix-Positionen (aus cheapinov2.dtsi transform):
@@ -167,6 +173,18 @@
         bt_mac: bt_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &bt BT_SEL 2>; };
 
+        /* ===== Linux TTY-Switch via Leader ===== */
+        tty1: tty1 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LC(LA(F1))>; };
+        tty2: tty2 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LC(LA(F2))>; };
+        tty3: tty3 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LC(LA(F3))>; };
+        tty4: tty4 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LC(LA(F4))>; };
+        tty5: tty5 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &kp LC(LA(F5))>; };
+
         /* Profile selektieren + dessen Bond loeschen (BT_CLR clears active profile). */
         bt_clr_0: bt_clr_0 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &bt BT_SEL 0 &bt BT_CLR>; };
@@ -260,32 +278,6 @@
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>;
         };
 
-        /* ===== L1 Mod-Morphs (MOD = Shift via Pos 31) ===== */
-        pgup_mm: pgup_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp PG_UP>, <&msc SCRL_UP>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        up_mm: up_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp UP>, <&mmv MOVE_UP>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        pgdn_mm: pgdn_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp PG_DN>, <&msc SCRL_DOWN>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        home_mm: home_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp HOME>, <&msc SCRL_LEFT>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        left_mm: left_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp LEFT>, <&mmv MOVE_LEFT>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        down_mm: down_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp DOWN>, <&mmv MOVE_DOWN>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        right_mm: right_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp RIGHT>, <&mmv MOVE_RIGHT>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        end_mm: end_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp END>, <&msc SCRL_RIGHT>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-
         /* BT-Profile: Tap = select, MOD+Tap = clear */
         bt0_mm: bt0_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&bt_lin>, <&bt_clr_0>;
@@ -308,18 +300,7 @@
             bindings = <&out OUT_BLE>, <&out OUT_USB>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* L1-Click-Combos: ohne Shift = Media, mit Shift = Mausklick */
-        pp_lclk_mm: pp_lclk_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp C_PP>, <&mkp LCLK>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        stop_rclk_mm: stop_rclk_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp C_STOP>, <&mkp RCLK>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        mclk_mm: mclk_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&none>, <&mkp MCLK>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-
-        /* ===== L2 Mod-Morphs (Tap = Symbol/Ziffer, MOD+Tap = F-Key) ===== */
+        /* ===== L4 Mod-Morphs (Tap = Symbol/Ziffer, MOD+Tap = F-Key) ===== */
         n1_f1: n1_f1 { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp N1>, <&kp F1>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -416,7 +397,7 @@
             bindings = <&kp DE_BSLS>, <&kp DE_PIPE>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* ===== MAC_L2 Mod-Morphs (ueberlagern L2 mit macOS-Option-Combos) ===== */
+        /* ===== MAC_L4 Mod-Morphs (ueberlagern L4 mit macOS-Option-Combos) ===== */
         grv_tild_mac: grv_tild_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&de_grv>, <&de_tild_mac>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -436,9 +417,9 @@
 
     conditional_layers {
         compatible = "zmk,conditional-layers";
-        mac_l2_overlay {
-            if-layers = <L2 MAC>;
-            then-layer = <MAC_L2>;
+        mac_l4_overlay {
+            if-layers = <L4 MAC>;
+            then-layer = <MAC_L4>;
         };
     };
 
@@ -510,55 +491,68 @@
             layers = <MAC>;
             slow-release;
         };
-
-        /* ===== L1 Click-Combos (mod-morph: ohne Shift = Media, mit Shift = Click) ===== */
-        combo_pp_lclk {
-            timeout-ms = <50>;
-            key-positions = <16 17>;  /* N + E */
-            bindings = <&pp_lclk_mm>;
-            layers = <L1>;
-        };
-        combo_stop_rclk {
-            timeout-ms = <50>;
-            key-positions = <17 18>;  /* E + I */
-            bindings = <&stop_rclk_mm>;
-            layers = <L1>;
-        };
-        combo_mclk {
-            timeout-ms = <50>;
-            key-positions = <26 27>;  /* M + , */
-            bindings = <&mclk_mm>;
-            layers = <L1>;
-        };
     };
 
     keymap {
         compatible = "zmk,keymap";
 
         /*
-         * BASE - Colemak DH (DE-Layout, plain).
+         * BASE - Colemak (DE-Layout, plain).
          * Thumbs: Mod-Tap und Layer-Tap, alle ZMK builtin.
          */
         BASE {
             bindings = <
-&kp Q     &kp W     &kp F     &kp P     &kp G              &kp J          &kp L          &kp U     &kp Z     &lit_quot
-&kp A     &kp R     &kp S     &kp T     &kp D              &kp H          &kp N          &kp E     &kp I     &kp O
-&kp Y     &kp X     &kp C     &kp V     &kp B              &kp K          &kp M          &comma_lt &dot_gt   &lit_slsh
-                    &mt LALT ESC  &mt LSHFT SPACE  &mt LCTRL TAB    &lt_ret_revtab L1 0  &lt_bspc_appwin L2 0  &lt_del_alttab CMD 0
+&kp Q  &kp W  &kp F         &kp P            &kp G                   &kp J                &kp L                 &kp U                 &kp Z     &lit_quot
+&kp A  &kp R  &kp S         &kp T            &kp D                   &kp H                &kp N                 &kp E                 &kp I     &kp O
+&kp Y  &kp X  &kp C         &kp V            &kp B                   &kp K                &kp M                 &comma_lt             &dot_gt   &lit_slsh
+              &mt LALT ESC  &mt LSHFT SPACE  &mt LCTRL TAB           &lt_ret_revtab L1 0  &lt_bspc_appwin L4 0  &lt_del_alttab CMD 0
             >;
         };
 
         /*
-         * L1 - NAV/MEDIA/MOUSE kombiniert.
-         * Linke Hand: System + BT-Profile + Output.
-         * Rechte Hand: Pfeile/Vol; mit MOD (Shift via Pos 31) -> Scroll/MMV.
+         * L1 - NAV (rechts) + MEDIA (links).
+         * Aktiviert via R3-Thumb hold (&lt_ret_revtab L1 0 auf BASE Pos 33).
+         * Linke Thumbs sind Layer-Taps zu MOUSE/SYSTEM:
+         *   Pos 30 -> &lt L2 0 (MOUSE)
+         *   Pos 32 -> &lt L3 0 (SYSTEM)
+         * R3 kann nach gemeinsamem Press losgelassen werden, L2/L3 bleibt aktiv.
          */
         L1 {
             bindings = <
-&soft_off  &studio_unlock &tog MAC   &bootloader  &sys_reset       &none      &pgup_mm  &up_mm   &pgdn_mm &none
-&bt0_mm    &bt1_mm        &bt2_mm    &bt3_mm      &bt4_mm          &home_mm   &left_mm  &down_mm &right_mm &end_mm
-&none      &none          &kp PSCRN  &none        &out_tog         &kp C_PREV &kp C_VOL_DN &kp C_MUTE &kp C_VOL_UP &kp C_NEXT
-                          &trans     &trans       &trans           &trans     &trans       &trans
+&trans  &kp C_VOL_DN  &kp C_MUTE  &kp C_VOL_UP  &trans             &trans    &kp PG_UP  &kp UP    &kp PG_DN  &trans
+&trans  &kp C_PREV    &kp C_PP    &kp C_NEXT    &trans             &kp HOME  &kp LEFT   &kp DOWN  &kp RIGHT  &kp END
+&trans  &trans        &trans      &trans        &trans             &trans    &trans     &trans    &trans     &trans
+                      &lt L2 0    &trans        &lt L3 0           &trans    &trans     &trans
+            >;
+        };
+
+        /*
+         * L2 - MOUSE.
+         * Aktiviert via &lt L2 0 auf L1 Pos 30 (linker Outer-Thumb).
+         * Rechte Hand: Cursor (mid row) + Scroll (top row).
+         * Rechte Thumbs: Klicks (MCLK / LCLK / RCLK).
+         */
+        L2 {
+            bindings = <
+&trans  &trans  &trans  &trans  &trans             &trans          &msc SCRL_UP    &mmv MOVE_UP    &msc SCRL_DOWN   &trans
+&trans  &trans  &trans  &trans  &trans             &msc SCRL_LEFT  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT  &msc SCRL_RIGHT
+&trans  &trans  &trans  &trans  &trans             &trans          &trans          &trans          &trans           &trans
+                &trans  &trans  &trans             &mkp MCLK       &mkp LCLK       &mkp RCLK
+            >;
+        };
+
+        /*
+         * L3 - SYSTEM.
+         * Aktiviert via &lt L3 0 auf L1 Pos 32 (linker Inner-Thumb).
+         * Rechte Hand: BT-Profile, Studio, Reset, Output, MAC-Toggle.
+         * Pos 25 = &sl LEADER (sticky-layer Leader-Mechanik fuer TTY-Switch etc.).
+         */
+        L3 {
+            bindings = <
+&trans  &trans  &trans  &trans  &trans               &soft_off   &studio_unlock  &tog MAC   &bootloader  &sys_reset
+&trans  &trans  &trans  &trans  &trans               &bt0_mm     &bt1_mm         &bt2_mm    &bt3_mm      &bt4_mm
+&trans  &trans  &trans  &trans  &trans               &sl LEADER  &none           &kp PSCRN  &none        &out_tog
+                &trans  &trans  &trans               &trans      &trans          &trans
             >;
         };
 
@@ -566,7 +560,7 @@
          * L2 - NUM / F-Keys / SYM kombiniert.
          * Mod-Morphs: Tap = Symbol/Ziffer, MOD (Shift via Pos 31) = F-Key oder shifted Symbol.
          */
-        L2 {
+        L4 {
             bindings = <
 &none_f11  &none_f12  &semi_col   &kp LS(RBKT) &dqlo_dq           &dqhi_rsq    &amp_pct  &mins_uscore &eq_plus  &none
 &n1_f1     &n2_f2     &n3_f3      &n4_f4       &n5_f5             &n6_f6       &n7_f7    &n8_f8       &n9_f9    &n0_f10
@@ -587,29 +581,44 @@
 
         /*
          * MAC - Sentinel-Layer, getoggelt via &tog MAC auf L1 Pos 2. Ueberlagert BASE,
-         * ueberschreibt nur OS-spezifisches: L3-Thumb (Pos 32) wird Cmd statt Ctrl.
+         * ueberschreibt nur OS-spezifisches: L3-Thumb (Pos 30) wird Cmd statt Ctrl.
          * Clipboard- und META-Combos sind ueber separate &kp LG(...)-Combos
          * mit `layers = <MAC>` gefiltert (siehe combos block).
          */
         MAC {
             bindings = <
-&trans &trans &trans &trans &trans     &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans     &trans &trans &trans &trans &trans
-&trans &trans &trans &trans &trans     &trans &trans &trans &trans &trans
-              &trans &trans &mt LGUI TAB    &trans &trans &trans
+&trans  &trans  &trans        &trans  &trans     &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans        &trans  &trans     &trans  &trans  &trans  &trans  &trans
+&trans  &trans  &trans        &trans  &trans     &trans  &trans  &trans  &trans  &trans
+                &mt LGUI TAB  &trans  &trans     &trans  &trans  &trans
             >;
         };
 
         /*
-         * MAC_L2 - conditional ueber L2 + MAC. Ueberschreibt nur die Symbole,
+         * MAC_L4 - conditional ueber L4 + MAC. Ueberschreibt nur die Symbole,
          * deren macOS-DE-Eingabe Option statt AltGr nutzt. Rest = trans.
          */
-        MAC_L2 {
+        MAC_L4 {
             bindings = <
 &trans     &trans     &trans     &trans     &trans            &trans     &trans     &trans         &trans         &trans
 &trans     &trans     &trans     &trans     &trans            &trans     &trans     &trans         &trans         &trans
 &grv_tild_mac &trans  &at_excl_mac &trans   &trans            &trans     &trans     &lbrc_rbrc_mac &lcbr_rcbr_mac &bsls_pipe_mac
                       &trans     &trans     &trans            &trans     &trans     &trans
+            >;
+        };
+
+        /*
+         * LEADER - sticky-layer aktiviert via &sl LEADER (auf L3 Pos 25).
+         * Erste Taste nach Aktivierung wird hier interpretiert, dann Layer wieder weg.
+         * Pos 0-4 (Reihe 2 links) = tty1..tty5 (Linux Ctrl+Alt+F1..F5).
+         * Alle anderen Positionen = &none -> Sticky-Layer wird einfach beendet.
+         */
+        LEADER {
+            bindings = <
+&none  &none  &none  &none  &none      &none  &none  &none  &none  &none
+&tty1  &tty2  &tty3  &tty4  &tty5      &none  &none  &none  &none  &none
+&none  &none  &none  &none  &none      &none  &none  &none  &none  &none
+                &none  &none  &none      &none  &none  &none
             >;
         };
     };
