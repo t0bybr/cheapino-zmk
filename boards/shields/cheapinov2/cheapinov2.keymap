@@ -127,6 +127,14 @@
             wait-ms = <0>; tap-ms = <0>;
             bindings = <&macro_tap &kp GRAVE &kp SPACE>;
         };
+        /* macOS-DE ISO: Apple tauscht HID GRAVE und NON_US_BACKSLASH ggue Linux.
+         * Auf Mac-DE ist NON_US_BACKSLASH der ^-Dead-Key (statt GRAVE).
+         */
+        de_circ_mac: de_circumflex_mac {
+            compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <0>; tap-ms = <0>;
+            bindings = <&macro_tap &kp NON_US_BACKSLASH &kp SPACE>;
+        };
         de_grv: de_grave_literal {
             compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             wait-ms = <0>; tap-ms = <0>;
@@ -253,6 +261,42 @@
             compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
             flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
             bindings = <&mo>, <&del_alttab>;
+        };
+
+        /* ===== Mac-Varianten der App-Switch Mod-Morphs =====
+         * Auf Mac soll Pos 30 hold (= LALT = Option) + R-thumb tap nicht
+         * Option+TAB sondern Cmd+TAB senden. Trick: keep-mods=0 wirft die
+         * User-Mod (LALT oder LGUI) komplett weg, das Binding setzt LGUI
+         * explizit. Funktioniert sowohl wenn LALT (Pos 30) als auch LGUI
+         * (Pos 32 via MAC override) gehalten wird.
+         */
+        ret_revtab_mac: ret_revtab_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp RET>, <&kp LG(LS(TAB))>;
+            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
+            keep-mods = <0>; };
+        bspc_appwin_mac: bspc_appwin_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp BSPC>, <&kp LG(GRAVE)>;
+            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
+            keep-mods = <0>; };
+        del_alttab_mac: del_alttab_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DEL>, <&kp LG(TAB)>;
+            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
+            keep-mods = <0>; };
+
+        lt_ret_revtab_mac: lt_ret_revtab_mac {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
+            bindings = <&mo>, <&ret_revtab_mac>;
+        };
+        lt_bspc_appwin_mac: lt_bspc_appwin_mac {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
+            bindings = <&mo>, <&bspc_appwin_mac>;
+        };
+        lt_del_alttab_mac: lt_del_alttab_mac {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
+            bindings = <&mo>, <&del_alttab_mac>;
         };
 
         /* ===== BASE Mod-Morphs ===== */
@@ -426,6 +470,22 @@
             bindings = <&kp DE_BSLS_MAC>, <&kp DE_PIPE_MAC>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
+        /* Apple-ISO-Swap-Korrekturen: auf Mac-DE liegt < auf HID GRAVE
+         * (statt NON_US_BACKSLASH) und ^ auf NON_US_BACKSLASH (statt GRAVE).
+         */
+        comma_lt_mac: comma_lessthan_mac {
+            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp COMMA>, <&kp GRAVE>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
+        dot_gt_mac: dot_greaterthan_mac {
+            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DOT>, <&kp LS(GRAVE)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
+        hash_circ_mac: hash_circ_mac {
+            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DE_HASH>, <&de_circ_mac>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
+
         /* macOS-DE Compose-Pendants. Auf Mac sind ndash/mdash/Anfuehrung etc.
          * native Option-Shortcuts (kein compose:sclk noetig).
          */
@@ -553,10 +613,10 @@
          */
         MAC {
             bindings = <
-&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans         &trans  &trans
-&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans         &trans  &trans
-&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans         &trans  &trans
-                &trans  &trans  &mt LGUI TAB     &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans         &trans         &trans
+&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans         &trans         &trans
+&trans  &trans  &trans  &trans  &trans     &trans  &trans  &comma_lt_mac  &dot_gt_mac    &trans
+                &trans  &trans  &mt LGUI TAB     &lt_ret_revtab_mac L1 0  &lt_bspc_appwin_mac L4 0  &lt_del_alttab_mac CMD 0
             >;
         };
 
@@ -638,7 +698,7 @@
             bindings = <
 &trans     &trans     &trans     &trans     &dqlo_dq_mac      &dqhi_rsq_mac &trans  &trans         &trans         &trans
 &trans     &trans     &trans     &trans     &trans            &trans     &trans     &trans         &trans         &trans
-&grv_tild_mac &trans  &at_excl_mac &trans   &ndash_mdash_mac  &ellip_deg_mac &trans &lbrc_rbrc_mac &lcbr_rcbr_mac &bsls_pipe_mac
+&grv_tild_mac &trans  &at_excl_mac &hash_circ_mac &ndash_mdash_mac  &ellip_deg_mac &trans &lbrc_rbrc_mac &lcbr_rcbr_mac &bsls_pipe_mac
                       &trans     &trans     &trans            &trans     &trans     &trans
             >;
         };
