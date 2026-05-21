@@ -249,10 +249,12 @@
         /* HRM-Wrapper mit Tap-Dance als Tap-Binding (ZMK builtin &hml erwartet
          * <&kp>, <&kp>, daher brauchen die HRM-Positionen mit Umlaut eigene
          * Hold-Tap-Behaviors mit fixed tap-binding auf das jeweilige td_*.
-         * #binding-cells = <1>: nur ein Mod-Param fuer Hold.
+         * #binding-cells = <2>: behavior-hold-tap Schema verlangt 2 (const).
+         * Der zweite Param wird vom Tap-Binding (&td_*, 0 cells) ignoriert.
+         * Aufruf: &hml_ae LGUI 0  (das 0 ist Dummy).
          */
         hml_ae: hml_with_ae {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <1>;
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
             flavor = "balanced";
             tapping-term-ms = <280>;
             quick-tap-ms = <175>;
@@ -262,7 +264,7 @@
             hold-trigger-on-release;
         };
         hml_ss: hml_with_ss {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <1>;
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
             flavor = "balanced";
             tapping-term-ms = <280>;
             quick-tap-ms = <175>;
@@ -272,12 +274,37 @@
             hold-trigger-on-release;
         };
         hmr_oe: hmr_with_oe {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <1>;
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
             flavor = "balanced";
             tapping-term-ms = <280>;
             quick-tap-ms = <175>;
             require-prior-idle-ms = <150>;
             bindings = <&kp>, <&td_oe>;
+            hold-trigger-key-positions = <0 1 2 3 4 10 11 12 13 14 20 21 22 23 24 30 31 32>;
+            hold-trigger-on-release;
+        };
+
+        /* ===== NUM_SYM Shift-HRMs auf Pos 13 (N4) und Pos 16 (N6) =====
+         * Cross-hand-only Shift, damit F-Keys und shifted Symbole im NUM_SYM
+         * erreichbar werden, ohne pure Mods auf den Zahlen-Positionen zu legen.
+         * Tap = jeweilige Zahl (mit shift-morph fuer F-Key), Hold = Shift.
+         * Aufruf: &num_shft_l LSHFT 0 / &num_shft_r RSHFT 0
+         */
+        num_shft_l: num_shift_left {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <150>;
+            bindings = <&kp>, <&n4_f4>;
+            hold-trigger-key-positions = <5 6 7 8 9 15 16 17 18 19 25 26 27 28 29 33 34 35>;
+            hold-trigger-on-release;
+        };
+        num_shft_r: num_shift_right {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <150>;
+            bindings = <&kp>, <&n6_f6>;
             hold-trigger-key-positions = <0 1 2 3 4 10 11 12 13 14 20 21 22 23 24 30 31 32>;
             hold-trigger-on-release;
         };
@@ -550,7 +577,7 @@
         BASE {
             bindings = <
 &kp Q          &kp W        &kp F          &kp P         &kp G              &kp J            &kp L             &td_ue        &kp Z        &lit_quot
-&hml_ae LGUI   &hml LALT R  &hml_ss LCTRL  &hml LSHFT T  &kp D              &kp H            &hmr RSHFT N      &hmr RCTRL E  &hmr RALT I  &hmr_oe RGUI
+&hml_ae LGUI 0 &hml LALT R  &hml_ss LCTRL 0 &hml LSHFT T &kp D              &kp H            &hmr RSHFT N      &hmr RCTRL E  &hmr RALT I  &hmr_oe RGUI 0
 &kp Y          &kp X        &kp C          &kp V         &kp B              &kp K            &kp M             &comma_lt     &dot_gt      &lit_slsh
                             &none          &lt NAV SPACE &lt MOUSE TAB      &lt SYS ENTER    &lt NUM_SYM BSPC  &none
             >;
@@ -623,7 +650,7 @@
         NUM_SYM {
             bindings = <
 &none_f11   &none_f12   &semi_col    &kp LS(RBKT) &dqlo_dq        &dqhi_rsq    &amp_pct  &mins_uscore  &eq_plus    &none
-&n1_f1      &n2_f2      &n3_f3       &n4_f4       &n5_f5          &n6_f6       &n7_f7    &n8_f8        &n9_f9      &n0_f10
+&n1_f1      &n2_f2      &n3_f3       &num_shft_l LSHFT 0  &n5_f5  &num_shft_r RSHFT 0  &n7_f7    &n8_f8        &n9_f9      &n0_f10
 &grv_tild   &dollar_eur &at_excl     &hash_circ   &ndash_mdash    &ellip_deg   &lpar_rpar &lbrc_rbrc   &lcbr_rcbr  &bsls_pipe
                         &trans       &kp ESC      &trans          &trans       &trans     &trans
             >;
