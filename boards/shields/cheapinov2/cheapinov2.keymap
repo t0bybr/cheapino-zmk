@@ -1,21 +1,32 @@
 /*
- * Cheapino v2 - Toby Keymap (ZMK Port)
+ * Cheapino v2 - Toby Keymap (ZMK Port) - HRM + Thumb-Layer Variante
  *
  * Layer-Aufbau:
- *   BASE      - Colemak, plain (keine HRMs), Mod-Tap/Layer-Tap auf Thumbs
- *   L1        - NAV (rechts) + MEDIA (links); via R3-Thumb hold
- *   L2        - MOUSE (Bewegung+Scroll rechts, Klicks rechte Thumbs); via L1 Pos 30 hold
- *   L3        - SYSTEM (BT, Studio, Reset, Output, MAC-Toggle, &sl LEADER); via L1 Pos 32 hold
- *   L4        - NUM/F-Keys/SYM kombiniert (Mod-Morph fuer F-Variante via Shift); via R2-Thumb hold
- *   CMD       - nur Umlaute (ae/oe/ue/ss); via R1-Thumb hold
- *   MAC       - Sentinel-Layer, getoggelt via L3; ueberlagert BASE
- *               (Pos 32 -> LGUI = Cmd statt LCTRL; Pos 30 bleibt LALT = Option)
- *   MAC_L4    - conditional ueber L4+MAC; ueberlagert L4 mit Mac-Symbolen
- *   MAC_L3    - conditional ueber L3+MAC; ueberlagert PSCRN mit Mac-Screenshot
- *   LEADER    - sticky-layer fuer TTY-Switch und weitere Sequenzen
+ *   BASE        - Colemak DH (DE-Layout), HRMs auf Home Row (GACS, gespiegelt)
+ *                 Tap-Dance auf A/O/U/S fuer Aeumlauts.
+ *                 Pos 30/35 frei. Pos 31-34 Layer-Taps zu den 4 Sub-Layern.
+ *   MAC         - Sentinel-Layer ueber BASE; aktiviert/deaktiviert idempotent via
+ *                 &to MAC / &to BASE auf SYS. Ueberschreibt nur OS-Quirks.
+ *   NAV         - Pos 31 SPC hold. Pfeile/Home/End rechts, pure Mods links,
+ *                 Pos 34=DEL (Hold SPC + Tap BSPC = DEL).
+ *   MOUSE       - Pos 32 TAB hold. Mouse-Cursor/Scroll rechts, pure Mods links,
+ *                 Klicks rechts.
+ *   SYS         - Pos 33 ENT hold. BT 3-state, Reset, Studio, MAC-Toggle, Leader.
+ *   NUM_SYM     - Pos 34 BSPC hold. Zahlen/Symbole/F-Keys (Shift = F-Key).
+ *                 Pos 31=ESC (Hold BSPC + Tap SPC = ESC).
+ *   MAC_NUM_SYM - conditional ueber NUM_SYM+MAC; Mac-Symbol-Overrides.
+ *   MAC_SYS     - conditional ueber SYS+MAC; PSCRN -> Mac-Screenshot.
+ *   LEADER      - sticky-layer via SYS Pos 25; TTY-Switch.
  *
- * MOD = LSHFT, gehalten via L2-Thumb (Pos 31 BASE = &mt LSHFT SPACE).
- * Auf hoeheren Layern sind die Thumbs &trans, daher faellt Pos 31 auf BASE durch.
+ * HRMs (Home Row, GACS, gespiegelt):
+ *   Links:  A=GUI, R=Alt, S=Ctrl, T=Shift
+ *   Rechts: N=Shift, E=Ctrl, I=Alt, O=GUI
+ *   Cross-hand-only via hold-trigger-key-positions.
+ *
+ * Tap-Dance Umlauts:
+ *   A double-tap = ae, O double-tap = oe, U double-tap = ue, S double-tap = ss
+ *   (Shift+double-tap = Ae/Oe/Ue/SS via mod-morph)
+ *   tapping-term-ms = 180 (kurz genug fuer flow, lang genug fuer Doppeltap)
  *
  * Annahme: deutsches Layout auf dem Host (Linux/Win DIN 2137 oder macOS DE).
  */
@@ -24,58 +35,57 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 
-/* Override pointing defaults BEFORE including pointing.h.
- * Default values are 600 (move) and 10 (scroll). Raise move, slow scroll.
- */
 #define ZMK_POINTING_DEFAULT_MOVE_VAL 1800
 #define ZMK_POINTING_DEFAULT_SCRL_VAL 10
 #include <dt-bindings/zmk/pointing.h>
 #include <dt-bindings/zmk/outputs.h>
 
-/* Layer-Reihenfolge: MAC liegt direkt ueber BASE (nur Sentinel-Overlay), damit
- * alle Hold-Layer (L1-L4, CMD) hoehere Prio haben und ihre Layer-Trigger
- * (z.B. L1 Pos 32 -> &lt L3) auch mit aktivem MAC funktionieren.
- * Die conditional-Layer (MAC_L4, MAC_L3) liegen ganz oben fuer ihre Overrides.
+/* Layer-Reihenfolge: MAC direkt ueber BASE (Sentinel-Overlay),
+ * Hold-Layer NAV/MOUSE/SYS/NUM_SYM darueber.
+ * Conditional Layer (MAC_NUM_SYM, MAC_SYS) ganz oben fuer ihre Overrides.
+ *
+ * OS-Modus-Wechsel via SYS-Layer:
+ *   &to BASE -> idempotent "Linux/Standard"-Modus (MAC off)
+ *   &to MAC  -> idempotent "Mac"-Modus (MAC on)
+ * Beide deaktivieren alle anderen Layer ausser Layer 0; Momentary-Layer
+ * (NAV/MOUSE/SYS/NUM_SYM via &lt) sind unbetroffen, weil sie nur waehrend
+ * Hold aktiv sind.
  */
-#define BASE     0
-#define MAC      1
-#define L1       2
-#define L2       3
-#define L3       4
-#define L4       5
-#define CMD      6
-#define MAC_L4   7
-#define LEADER   8
-#define MAC_L3   9
+#define BASE          0
+#define MAC           1
+#define NAV           2
+#define MOUSE         3
+#define SYS           4
+#define NUM_SYM       5
+#define MAC_NUM_SYM   6
+#define MAC_SYS       7
+#define LEADER        8
 
 /*
- * Matrix-Positionen (aus cheapinov2.dtsi transform):
+ * Matrix-Positionen:
  *   0  1  2  3  4        5  6  7  8  9
  *  10 11 12 13 14       15 16 17 18 19
  *  20 21 22 23 24       25 26 27 28 29
  *         30 31 32      33 34 35
  */
 
-/* DE-layout symbol aliases (Linux/Win DIN 2137).
- * AltGr on a DE keyboard = Right-Alt = RA() in ZMK.
- */
-#define DE_LCBR RA(N7)                /* { = AltGr+7 */
-#define DE_RCBR RA(N0)                /* } = AltGr+0 */
-#define DE_LBRC RA(N8)                /* [ = AltGr+8 */
-#define DE_RBRC RA(N9)                /* ] = AltGr+9 */
-#define DE_BSLS RA(MINUS)             /* \ = AltGr+ss */
-#define DE_AT   RA(Q)                 /* @ = AltGr+Q */
-#define DE_EURO RA(E)                 /* EUR = AltGr+E */
-#define DE_PIPE RA(NON_US_BACKSLASH)  /* | = AltGr+< */
-#define DE_TILD RA(RIGHT_BRACKET)     /* ~ = AltGr+Plus */
+/* DE-layout symbol aliases (Linux/Win DIN 2137). */
+#define DE_LCBR RA(N7)
+#define DE_RCBR RA(N0)
+#define DE_LBRC RA(N8)
+#define DE_RBRC RA(N9)
+#define DE_BSLS RA(MINUS)
+#define DE_AT   RA(Q)
+#define DE_EURO RA(E)
+#define DE_PIPE RA(NON_US_BACKSLASH)
+#define DE_TILD RA(RIGHT_BRACKET)
 #define DE_HASH NON_US_HASH
-/* Native DE umlaut/eszett positions (physical US keycaps -> DE chars) */
-#define DE_ADIA SQT                   /* A = physical ' key -> Ae */
-#define DE_ODIA SEMI                  /* O = physical ; key -> Oe */
-#define DE_UDIA LBKT                  /* U = physical [ key -> Ue */
-#define DE_SS   MINUS                 /* ss = physical - key -> ss */
+#define DE_ADIA SQT
+#define DE_ODIA SEMI
+#define DE_UDIA LBKT
+#define DE_SS   MINUS
 
-/* macOS German layout uses different Option-key combos for the same symbols. */
+/* macOS German layout (Option-key combos). */
 #define DE_LCBR_MAC LA(N8)
 #define DE_RCBR_MAC LA(N9)
 #define DE_LBRC_MAC LA(N5)
@@ -84,7 +94,6 @@
 #define DE_AT_MAC   LA(L)
 #define DE_PIPE_MAC LA(N7)
 
-/* Mouse ramp tuning - approximates QMK's MK_KINETIC_SPEED feel. */
 &mmv {
     time-to-max-speed-ms = <100>;
     acceleration-exponent = <3>;
@@ -95,9 +104,6 @@
     acceleration-exponent = <0>;
 };
 
-/* Globale Hold-Tap-Defaults fuer ZMK builtin &mt und &lt.
- * Gilt fuer alle Vorkommen in der Keymap (Thumbs).
- */
 &mt {
     tapping-term-ms = <200>;
     quick-tap-ms = <150>;
@@ -110,26 +116,19 @@
     flavor = "balanced";
 };
 
-/* Caps-Word soll durch Bindestriche, Backspace und Umlaut-Mod-Morph-Slots
- * weiterlaufen. Slot-Liste unveraendert.
- */
 &caps_word {
     continue-list = <UNDERSCORE MINUS BACKSPACE DELETE KP_MINUS SLASH SQT SEMI LBKT>;
 };
 
 / {
     macros {
-        /* ===== Linux DE-Compose Typography =====
-         * Voraussetzung: setxkbmap -option compose:sclk (Scroll-Lock = Compose).
-         */
+        /* Linux DE-Compose Typography */
         de_circ: de_circumflex {
             compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             wait-ms = <0>; tap-ms = <0>;
             bindings = <&macro_tap &kp GRAVE &kp SPACE>;
         };
-        /* macOS-DE ISO: Apple tauscht HID GRAVE und NON_US_BACKSLASH ggue Linux.
-         * Auf Mac-DE ist NON_US_BACKSLASH der ^-Dead-Key (statt GRAVE).
-         */
+        /* Mac-DE-ISO: Apple swap GRAVE <-> NON_US_BACKSLASH */
         de_circ_mac: de_circumflex_mac {
             compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             wait-ms = <0>; tap-ms = <0>;
@@ -157,7 +156,7 @@
         degree: degree_sign { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp SCROLLLOCK &kp O &kp O>; };
 
-        /* ===== macOS native typography (Option-key shortcuts) ===== */
+        /* macOS native typography (Option-key shortcuts) */
         mdash_mac: mdash_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp LA(LS(SLASH))>; };
         ndash_mac: ndash_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
@@ -175,25 +174,13 @@
         de_tild_mac: de_tild_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp LA(N) &kp SPACE>; };
         degree_mac: degree_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &kp LS(GRAVE)>; };
+            bindings = <&macro_tap &kp LS(NON_US_BACKSLASH)>; };
 
-        /* macOS Screenshot: Bildausschnitt -> Zwischenablage (Shift+Ctrl+Cmd+4). */
+        /* macOS Screenshot: Shift+Ctrl+Cmd+4 (selection -> clipboard) */
         pscrn_mac: pscrn_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp LC(LG(LS(N4)))>; };
 
-        /* ===== BT-Profile ===== */
-        bt_lin: bt_lin { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 0>; };
-        bt_and: bt_and { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 1>; };
-        /* BT-Profile 2 ohne automatisches MAC-Toggle. Layout wird separat
-         * via &tog MAC auf L1 umgeschaltet, sonst driftet der State wenn
-         * man bt_mac doppelt antippt.
-         */
-        bt_mac: bt_mac { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 2>; };
-
-        /* ===== Linux TTY-Switch via Leader ===== */
+        /* Linux TTY-Switch via Leader */
         tty1: tty1 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp LC(LA(F1))>; };
         tty2: tty2 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
@@ -204,99 +191,95 @@
             bindings = <&macro_tap &kp LC(LA(F4))>; };
         tty5: tty5 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
             bindings = <&macro_tap &kp LC(LA(F5))>; };
-
-        /* Profile selektieren + dessen Bond loeschen (BT_CLR clears active profile). */
-        bt_clr_0: bt_clr_0 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 0 &bt BT_CLR>; };
-        bt_clr_1: bt_clr_1 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 1 &bt BT_CLR>; };
-        bt_clr_2: bt_clr_2 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 2 &bt BT_CLR>; };
-        bt_clr_3: bt_clr_3 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 3 &bt BT_CLR>; };
-        bt_clr_4: bt_clr_4 { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
-            bindings = <&macro_tap &bt BT_SEL 4 &bt BT_CLR>; };
     };
 
     behaviors {
-        /* ===== Window-/App-Navigation auf rechten Thumbs =====
-         * Alt (Linux/Win) bzw. LGUI (Mac) liegen auf LO-Thumb (Pos 30 LALT)
-         * bzw. L3-Thumb (Pos 32 LCTRL/LGUI) - beide links. Mit gehaltenem
-         * Mod triggern die rechten Thumbs cross-handed App-/Window-Switch:
-         *   R1 (Pos 35, DEL)  -> Mod+TAB        (App vorwaerts)
-         *   R3 (Pos 33, RET)  -> Mod+Shift+TAB  (App rueckwaerts)
-         *   R2 (Pos 34, BSPC) -> Mod+GRAVE      (Window innerhalb App)
-         *
-         * Mods-Mask deckt Alt + GUI ab, damit Linux UND Mac funktionieren.
-         * keep-mods preserviert den User-Mod, sonst kaeme nur die Tap-Action
-         * ohne Modifier durch.
+        /* ===== Home Row Mods (urob-Stil, timeless) =====
+         * Cross-hand-only trigger. require-prior-idle-ms verhindert Mis-fires
+         * im Flow-Tippen.
          */
-        ret_revtab: ret_revtab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp RET>, <&kp LS(TAB)>;
-            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
-            keep-mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>; };
-        bspc_appwin: bspc_appwin { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp BSPC>, <&kp GRAVE>;
-            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
-            keep-mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>; };
-        del_alttab: del_alttab { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp DEL>, <&kp TAB>;
-            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
-            keep-mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>; };
-
-        /* Custom layer-tap mit mod-morph als tap-binding. ZMK-builtin &lt
-         * akzeptiert nur &kp als tap, daher drei lokale Hold-Tap-Wrapper.
-         */
-        lt_ret_revtab: lt_ret_revtab {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
-            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&ret_revtab>;
+        hml: home_row_mod_left {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
+            bindings = <&kp>, <&kp>;
+            hold-trigger-key-positions = <5 6 7 8 9 15 16 17 18 19 25 26 27 28 29 33 34 35>;
+            hold-trigger-on-release;
         };
-        lt_bspc_appwin: lt_bspc_appwin {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
-            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&bspc_appwin>;
-        };
-        lt_del_alttab: lt_del_alttab {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
-            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&del_alttab>;
+        hmr: home_row_mod_right {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
+            bindings = <&kp>, <&kp>;
+            hold-trigger-key-positions = <0 1 2 3 4 10 11 12 13 14 20 21 22 23 24 30 31 32>;
+            hold-trigger-on-release;
         };
 
-        /* ===== Mac-Varianten der App-Switch Mod-Morphs =====
-         * Auf Mac soll Pos 30 hold (= LALT = Option) + R-thumb tap nicht
-         * Option+TAB sondern Cmd+TAB senden. Trick: keep-mods=0 wirft die
-         * User-Mod (LALT oder LGUI) komplett weg, das Binding setzt LGUI
-         * explizit. Funktioniert sowohl wenn LALT (Pos 30) als auch LGUI
-         * (Pos 32 via MAC override) gehalten wird.
+        /* ===== Tap-Dance fuer Umlauts =====
+         * Single tap = Buchstabe, Double tap (innerhalb 180ms) = Umlaut.
+         * Umlauten sind Mod-Morphs, so dass Shift+Double-Tap = Ae/Oe/Ue/SS.
          */
-        ret_revtab_mac: ret_revtab_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp RET>, <&kp LG(LS(TAB))>;
-            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
-            keep-mods = <0>; };
-        bspc_appwin_mac: bspc_appwin_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp BSPC>, <&kp LG(GRAVE)>;
-            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
-            keep-mods = <0>; };
-        del_alttab_mac: del_alttab_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp DEL>, <&kp LG(TAB)>;
-            mods = <(MOD_LALT|MOD_RALT|MOD_LGUI|MOD_RGUI)>;
-            keep-mods = <0>; };
+        td_ae: tap_dance_ae {
+            compatible = "zmk,behavior-tap-dance"; #binding-cells = <0>;
+            tapping-term-ms = <180>;
+            bindings = <&kp A>, <&ae_m>;
+        };
+        td_oe: tap_dance_oe {
+            compatible = "zmk,behavior-tap-dance"; #binding-cells = <0>;
+            tapping-term-ms = <180>;
+            bindings = <&kp O>, <&oe_m>;
+        };
+        td_ue: tap_dance_ue {
+            compatible = "zmk,behavior-tap-dance"; #binding-cells = <0>;
+            tapping-term-ms = <180>;
+            bindings = <&kp U>, <&ue_m>;
+        };
+        td_ss: tap_dance_ss {
+            compatible = "zmk,behavior-tap-dance"; #binding-cells = <0>;
+            tapping-term-ms = <180>;
+            bindings = <&kp S>, <&ss_m>;
+        };
 
-        lt_ret_revtab_mac: lt_ret_revtab_mac {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
-            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&ret_revtab_mac>;
+        /* HRM-Wrapper mit Tap-Dance als Tap-Binding (ZMK builtin &hml erwartet
+         * <&kp>, <&kp>, daher brauchen die HRM-Positionen mit Umlaut eigene
+         * Hold-Tap-Behaviors mit fixed tap-binding auf das jeweilige td_*.
+         * #binding-cells = <1>: nur ein Mod-Param fuer Hold.
+         */
+        hml_ae: hml_with_ae {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <1>;
+            flavor = "balanced";
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
+            bindings = <&kp>, <&td_ae>;
+            hold-trigger-key-positions = <5 6 7 8 9 15 16 17 18 19 25 26 27 28 29 33 34 35>;
+            hold-trigger-on-release;
         };
-        lt_bspc_appwin_mac: lt_bspc_appwin_mac {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
-            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&bspc_appwin_mac>;
+        hml_ss: hml_with_ss {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <1>;
+            flavor = "balanced";
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
+            bindings = <&kp>, <&td_ss>;
+            hold-trigger-key-positions = <5 6 7 8 9 15 16 17 18 19 25 26 27 28 29 33 34 35>;
+            hold-trigger-on-release;
         };
-        lt_del_alttab_mac: lt_del_alttab_mac {
-            compatible = "zmk,behavior-hold-tap"; #binding-cells = <2>;
-            flavor = "balanced"; tapping-term-ms = <200>; quick-tap-ms = <150>;
-            bindings = <&mo>, <&del_alttab_mac>;
+        hmr_oe: hmr_with_oe {
+            compatible = "zmk,behavior-hold-tap"; #binding-cells = <1>;
+            flavor = "balanced";
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
+            bindings = <&kp>, <&td_oe>;
+            hold-trigger-key-positions = <0 1 2 3 4 10 11 12 13 14 20 21 22 23 24 30 31 32>;
+            hold-trigger-on-release;
         };
 
         /* ===== BASE Mod-Morphs ===== */
@@ -334,29 +317,76 @@
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>;
         };
 
-        /* BT-Profile: Tap = select, MOD+Tap = clear */
-        bt0_mm: bt0_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&bt_lin>, <&bt_clr_0>;
+        /* Apple-ISO-Swap-Korrekturen fuer < / > / ^ */
+        comma_lt_mac: comma_lessthan_mac {
+            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp COMMA>, <&kp GRAVE>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        bt1_mm: bt1_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&bt_and>, <&bt_clr_1>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        bt2_mm: bt2_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&bt_mac>, <&bt_clr_2>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        bt3_mm: bt3_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&bt BT_SEL 3>, <&bt_clr_3>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        bt4_mm: bt4_mm { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&bt BT_SEL 4>, <&bt_clr_4>;
+        dot_gt_mac: dot_greaterthan_mac {
+            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DOT>, <&kp LS(GRAVE)>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* Output: Tap = BLE, MOD+Tap = USB */
+        /* ===== BT-Profile 3-state mod-morphs =====
+         * Tap = Select profile
+         * Alt+Tap = Disconnect (Bond bleibt erhalten)
+         * Ctrl+Alt+Tap = Clear (Bond loeschen)
+         *
+         * Nested: outer checks Ctrl -> clear, inner checks Alt -> disc, default = select.
+         */
+        bt0_inner: bt0_inner { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt BT_SEL 0>, <&bt BT_DISC 0>;
+            mods = <(MOD_LALT|MOD_RALT)>; keep-mods = <0>; };
+        bt1_inner: bt1_inner { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt BT_SEL 1>, <&bt BT_DISC 1>;
+            mods = <(MOD_LALT|MOD_RALT)>; keep-mods = <0>; };
+        bt2_inner: bt2_inner { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt BT_SEL 2>, <&bt BT_DISC 2>;
+            mods = <(MOD_LALT|MOD_RALT)>; keep-mods = <0>; };
+        bt3_inner: bt3_inner { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt BT_SEL 3>, <&bt BT_DISC 3>;
+            mods = <(MOD_LALT|MOD_RALT)>; keep-mods = <0>; };
+        bt4_inner: bt4_inner { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt BT_SEL 4>, <&bt BT_DISC 4>;
+            mods = <(MOD_LALT|MOD_RALT)>; keep-mods = <0>; };
+
+        /* Ctrl+Alt+Tap = clear (active profile only).
+         * Note: BT_CLR clears whichever profile is currently selected. So
+         * the outer morph first selects, then clears, via macros below.
+         */
+        bt0_clr: bt0_clr { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &bt BT_SEL 0 &bt BT_CLR>; };
+        bt1_clr: bt1_clr { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &bt BT_SEL 1 &bt BT_CLR>; };
+        bt2_clr: bt2_clr { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &bt BT_SEL 2 &bt BT_CLR>; };
+        bt3_clr: bt3_clr { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &bt BT_SEL 3 &bt BT_CLR>; };
+        bt4_clr: bt4_clr { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            bindings = <&macro_tap &bt BT_SEL 4 &bt BT_CLR>; };
+
+        bt0_3st: bt0_3st { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt0_inner>, <&bt0_clr>;
+            mods = <(MOD_LCTL|MOD_RCTL)>; keep-mods = <0>; };
+        bt1_3st: bt1_3st { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt1_inner>, <&bt1_clr>;
+            mods = <(MOD_LCTL|MOD_RCTL)>; keep-mods = <0>; };
+        bt2_3st: bt2_3st { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt2_inner>, <&bt2_clr>;
+            mods = <(MOD_LCTL|MOD_RCTL)>; keep-mods = <0>; };
+        bt3_3st: bt3_3st { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt3_inner>, <&bt3_clr>;
+            mods = <(MOD_LCTL|MOD_RCTL)>; keep-mods = <0>; };
+        bt4_3st: bt4_3st { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&bt4_inner>, <&bt4_clr>;
+            mods = <(MOD_LCTL|MOD_RCTL)>; keep-mods = <0>; };
+
+        /* Output toggle: Tap = BLE, Shift+Tap = USB */
         out_tog: out_tog { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&out OUT_BLE>, <&out OUT_USB>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* ===== L4 Mod-Morphs (Tap = Symbol/Ziffer, MOD+Tap = F-Key) ===== */
+        /* ===== NUM_SYM Layer Mod-Morphs (Tap = Symbol/Ziffer, Shift = F-Key) ===== */
         n1_f1: n1_f1 { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp N1>, <&kp F1>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -388,7 +418,6 @@
             bindings = <&kp N0>, <&kp F10>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* L2 obere Reihe links: leer/F11, leer/F12, ;/:, dqlo/dquote */
         none_f11: none_f11 { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&none>, <&kp F11>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -402,7 +431,6 @@
             bindings = <&dqlo>, <&dquote>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* L2 untere Reihe links: `/~, $/EUR, @/!, #/^, ndash/mdash */
         grv_tild: grv_tild { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&de_grv>, <&kp DE_TILD>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -419,16 +447,12 @@
             bindings = <&ndash>, <&mdash>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* L2 obere Reihe rechts: dqhi/rsquote, &/%, -/_, =/+ */
         dqhi_rsq: dqhi_rsq { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&dqhi>, <&rsquote>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
         amp_pct: amp_pct { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp LS(N6)>, <&kp LS(N5)>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        /* DE: '-' liegt auf der HID-SLASH-Taste (US '/'), '_' = LS(SLASH).
-         * MINUS waere auf DE 'ss' und LS(MINUS) waere '?'.
-         */
         mins_uscore: mins_uscore { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp SLASH>, <&kp LS(SLASH)>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -436,7 +460,6 @@
             bindings = <&kp LS(N0)>, <&kp RBKT>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* L2 untere Reihe rechts: ellip/deg, (/ ), [/], {/}, \/| */
         ellip_deg: ellip_deg { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&ellip>, <&degree>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -453,12 +476,15 @@
             bindings = <&kp DE_BSLS>, <&kp DE_PIPE>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
 
-        /* ===== MAC_L4 Mod-Morphs (ueberlagern L4 mit macOS-Option-Combos) ===== */
+        /* MAC_NUM_SYM Mod-Morphs (Mac Option-Combos statt AltGr) */
         grv_tild_mac: grv_tild_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&de_grv>, <&de_tild_mac>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
         at_excl_mac: at_excl_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp DE_AT_MAC>, <&kp LS(N1)>;
+            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
+        hash_circ_mac: hash_circ_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
+            bindings = <&kp DE_HASH>, <&de_circ_mac>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
         lbrc_rbrc_mac: lbrc_rbrc_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp DE_LBRC_MAC>, <&kp DE_RBRC_MAC>;
@@ -469,26 +495,6 @@
         bsls_pipe_mac: bsls_pipe_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&kp DE_BSLS_MAC>, <&kp DE_PIPE_MAC>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-
-        /* Apple-ISO-Swap-Korrekturen: auf Mac-DE liegt < auf HID GRAVE
-         * (statt NON_US_BACKSLASH) und ^ auf NON_US_BACKSLASH (statt GRAVE).
-         */
-        comma_lt_mac: comma_lessthan_mac {
-            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp COMMA>, <&kp GRAVE>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        dot_gt_mac: dot_greaterthan_mac {
-            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp DOT>, <&kp LS(GRAVE)>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-        hash_circ_mac: hash_circ_mac {
-            compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
-            bindings = <&kp DE_HASH>, <&de_circ_mac>;
-            mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
-
-        /* macOS-DE Compose-Pendants. Auf Mac sind ndash/mdash/Anfuehrung etc.
-         * native Option-Shortcuts (kein compose:sclk noetig).
-         */
         dqlo_dq_mac: dqlo_dq_mac { compatible = "zmk,behavior-mod-morph"; #binding-cells = <0>;
             bindings = <&dqlo_mac>, <&dquote_mac>;
             mods = <(MOD_LSFT|MOD_RSFT)>; keep-mods = <0>; };
@@ -505,209 +511,154 @@
 
     conditional_layers {
         compatible = "zmk,conditional-layers";
-        mac_l4_overlay {
-            if-layers = <L4 MAC>;
-            then-layer = <MAC_L4>;
+        mac_num_sym_overlay {
+            if-layers = <NUM_SYM MAC>;
+            then-layer = <MAC_NUM_SYM>;
         };
-        mac_l3_overlay {
-            if-layers = <L3 MAC>;
-            then-layer = <MAC_L3>;
+        mac_sys_overlay {
+            if-layers = <SYS MAC>;
+            then-layer = <MAC_SYS>;
         };
     };
 
     combos {
         compatible = "zmk,combos";
 
-        /* ===== BASE Clipboard (Linux/Win) ===== */
-        combo_cut {
-            timeout-ms = <50>;
-            key-positions = <20 21>;  /* Z + X */
-            bindings = <&kp LC(X)>;
-            layers = <BASE>;
-        };
-        combo_copy {
-            timeout-ms = <50>;
-            key-positions = <21 22>;  /* X + C */
-            bindings = <&kp LC(C)>;
-            layers = <BASE>;
-        };
-        combo_paste {
-            timeout-ms = <50>;
-            key-positions = <22 23>;  /* C + V */
-            bindings = <&kp LC(V)>;
-            layers = <BASE>;
-        };
+        /* Clipboard Linux/Win (BASE) */
+        combo_cut    { timeout-ms = <50>; key-positions = <20 21>; bindings = <&kp LC(X)>; layers = <BASE>; };
+        combo_copy   { timeout-ms = <50>; key-positions = <21 22>; bindings = <&kp LC(C)>; layers = <BASE>; };
+        combo_paste  { timeout-ms = <50>; key-positions = <22 23>; bindings = <&kp LC(V)>; layers = <BASE>; };
 
-        /* ===== MAC Clipboard (Cmd statt Ctrl) ===== */
-        combo_cut_mac {
-            timeout-ms = <50>;
-            key-positions = <20 21>;
-            bindings = <&kp LG(X)>;
-            layers = <MAC>;
-        };
-        combo_copy_mac {
-            timeout-ms = <50>;
-            key-positions = <21 22>;
-            bindings = <&kp LG(C)>;
-            layers = <MAC>;
-        };
-        combo_paste_mac {
-            timeout-ms = <50>;
-            key-positions = <22 23>;
-            bindings = <&kp LG(V)>;
-            layers = <MAC>;
-        };
+        /* Clipboard Mac (MAC) */
+        combo_cut_mac    { timeout-ms = <50>; key-positions = <20 21>; bindings = <&kp LG(X)>; layers = <MAC>; };
+        combo_copy_mac   { timeout-ms = <50>; key-positions = <21 22>; bindings = <&kp LG(C)>; layers = <MAC>; };
+        combo_paste_mac  { timeout-ms = <50>; key-positions = <22 23>; bindings = <&kp LG(V)>; layers = <MAC>; };
 
-        /* Caps-Word via Spc + Bspc thumbs (BOTH_SHIFTS_TURNS_ON_CAPS_WORD-Aequivalent) */
-        combo_caps {
-            timeout-ms = <50>;
-            key-positions = <31 34>;
-            bindings = <&caps_word>;
-            layers = <BASE MAC>;
-        };
-
-        /* META = LGUI auf Linux/Win, LCTRL auf Mac. slow-release haelt den Mod
-         * solange eine der Combo-Tasten gedrueckt bleibt -> Mod+Click etc.
-         */
-        combo_meta {
-            timeout-ms = <50>;
-            key-positions = <31 32>;
-            bindings = <&kp LGUI>;
-            layers = <BASE>;
-            slow-release;
-        };
-        combo_meta_mac {
-            timeout-ms = <50>;
-            key-positions = <31 32>;
-            bindings = <&kp LCTRL>;
-            layers = <MAC>;
-            slow-release;
-        };
+        /* Caps-Word: SPC + BSPC simultan (klassisch "both shifts") */
+        combo_caps { timeout-ms = <50>; key-positions = <31 34>; bindings = <&caps_word>; layers = <BASE MAC>; };
     };
 
     keymap {
         compatible = "zmk,keymap";
 
         /*
-         * BASE - Colemak (DE-Layout, plain).
-         * Thumbs: Mod-Tap und Layer-Tap, alle ZMK builtin.
+         * BASE - Colemak (DE-Layout).
+         * Home Row: HRMs mit GACS, beide Haende gespiegelt.
+         * A/O/U/S: Tap-Dance fuer Umlauts (double-tap = Ae/Oe/Ue/SS).
+         * Thumbs: Pos 30/35 frei; Pos 31-34 sind Layer-Taps zu NAV/MOUSE/SYS/NUM_SYM.
          */
         BASE {
             bindings = <
-&kp Q  &kp W  &kp F         &kp P            &kp G                   &kp J                &kp L                 &kp U                 &kp Z     &lit_quot
-&kp A  &kp R  &kp S         &kp T            &kp D                   &kp H                &kp N                 &kp E                 &kp I     &kp O
-&kp Y  &kp X  &kp C         &kp V            &kp B                   &kp K                &kp M                 &comma_lt             &dot_gt   &lit_slsh
-              &mt LALT ESC  &mt LSHFT SPACE  &mt LCTRL TAB           &lt_ret_revtab L1 0  &lt_bspc_appwin L4 0  &lt_del_alttab CMD 0
+&kp Q          &kp W        &kp F          &kp P         &kp G              &kp J            &kp L             &td_ue        &kp Z        &lit_quot
+&hml_ae LGUI   &hml LALT R  &hml_ss LCTRL  &hml LSHFT T  &kp D              &kp H            &hmr RSHFT N      &hmr RCTRL E  &hmr RALT I  &hmr_oe RGUI
+&kp Y          &kp X        &kp C          &kp V         &kp B              &kp K            &kp M             &comma_lt     &dot_gt      &lit_slsh
+                            &none          &lt NAV SPACE &lt MOUSE TAB      &lt SYS ENTER    &lt NUM_SYM BSPC  &none
             >;
         };
 
         /*
-         * MAC - Sentinel-Layer (Layer-ID 1, direkt ueber BASE). Getoggelt via
-         * &tog MAC auf L3. Ueberlagert NUR BASE, alle Hold-Layer (L1-L4, CMD)
-         * sind hoeher und gewinnen Pos-Lookup -- damit funktionieren Layer-
-         * Trigger (L1 Pos 30 -> L2, L1 Pos 32 -> L3) auch mit aktivem MAC.
-         * Ueberschreibungen:
-         *   - Pos 30 trans -> faellt auf BASE durch (LALT = Option auf Mac).
-         *   - Pos 32 ueberschrieben zu LGUI (Cmd) statt LCTRL.
-         * Clipboard, META, Screenshot, Compose: ueber separate Combos/Layer.
+         * MAC - Sentinel-Overlay ueber BASE. Aktiviert/deaktiviert via
+         * &to MAC / &to BASE im SYS-Layer. Ueberschreibt nur OS-Quirks
+         * (Apple-ISO-Swap fuer comma/dot).
          */
         MAC {
             bindings = <
 &trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans         &trans         &trans
 &trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans         &trans         &trans
 &trans  &trans  &trans  &trans  &trans     &trans  &trans  &comma_lt_mac  &dot_gt_mac    &trans
-                &trans  &trans  &mt LGUI TAB     &lt_ret_revtab_mac L1 0  &lt_bspc_appwin_mac L4 0  &lt_del_alttab_mac CMD 0
+                &trans  &trans  &trans     &trans  &trans  &trans
             >;
         };
 
         /*
-         * L1 - NAV (rechts) + MEDIA (links).
-         * Aktiviert via R3-Thumb hold (&lt_ret_revtab L1 0 auf BASE Pos 33).
-         * Linke Thumbs sind Layer-Taps zu MOUSE/SYSTEM:
-         *   Pos 30 -> &lt L2 0 (MOUSE)
-         *   Pos 32 -> &lt L3 0 (SYSTEM)
-         * R3 kann nach gemeinsamem Press losgelassen werden, L2/L3 bleibt aktiv.
+         * NAV - Pos 31 (SPC) hold.
+         * Rechts: Pfeil-Cluster + PG_UP/DN/HOME/END
+         * Links: pure Mods auf Home-Row (LGUI/LALT/LCTRL/LSHFT) fuer Same-Hand-Mod+NAV
+         * Pos 34 = DEL (hold SPC + tap BSPC -> DEL)
          */
-        L1 {
+        NAV {
             bindings = <
-&trans  &kp C_VOL_DN  &kp C_MUTE  &kp C_VOL_UP  &trans             &trans    &kp PG_UP  &kp UP    &kp PG_DN  &trans
-&trans  &kp C_PREV    &kp C_PP    &kp C_NEXT    &trans             &kp HOME  &kp LEFT   &kp DOWN  &kp RIGHT  &kp END
-&trans  &trans        &trans      &trans        &trans             &trans    &trans     &trans    &trans     &trans
-                      &lt L2 0    &trans        &lt L3 0           &trans    &trans     &trans
+&trans    &trans     &trans     &trans     &trans            &trans    &kp PG_UP  &kp UP    &kp PG_DN  &trans
+&kp LGUI  &kp LALT   &kp LCTRL  &kp LSHFT  &trans            &kp HOME  &kp LEFT   &kp DOWN  &kp RIGHT  &kp END
+&trans    &trans     &trans     &trans     &trans            &trans    &trans     &trans    &trans     &trans
+                     &trans     &trans     &trans            &trans    &kp DEL    &trans
             >;
         };
 
         /*
-         * L2 - MOUSE.
-         * Aktiviert via &lt L2 0 auf L1 Pos 30 (linker Outer-Thumb).
-         * Rechte Hand: Cursor (mid row) + Scroll (top row).
-         * Rechte Thumbs: Klicks (MCLK / LCLK / RCLK).
+         * MOUSE - Pos 32 (TAB) hold.
+         * Rechts: Cursor (mid row) + Scroll (top row), Klicks auf Pos 33/34/35.
+         * Links: pure Mods fuer Mod+Click.
          */
-        L2 {
+        MOUSE {
             bindings = <
-&trans  &trans  &trans  &trans  &trans             &trans          &msc SCRL_UP    &mmv MOVE_UP    &msc SCRL_DOWN   &trans
-&trans  &trans  &trans  &trans  &trans             &msc SCRL_LEFT  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT  &msc SCRL_RIGHT
-&trans  &trans  &trans  &trans  &trans             &trans          &trans          &trans          &trans           &trans
-                &trans  &trans  &trans             &mkp MCLK       &mkp LCLK       &mkp RCLK
+&trans    &trans     &trans     &trans     &trans           &trans          &msc SCRL_UP    &mmv MOVE_UP    &msc SCRL_DOWN   &trans
+&kp LGUI  &kp LALT   &kp LCTRL  &kp LSHFT  &trans           &msc SCRL_LEFT  &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_RIGHT  &msc SCRL_RIGHT
+&trans    &trans     &trans     &trans     &trans           &trans          &trans          &trans          &trans           &trans
+                     &trans     &trans     &trans           &mkp MCLK       &mkp LCLK       &mkp RCLK
             >;
         };
 
         /*
-         * L3 - SYSTEM.
-         * Aktiviert via &lt L3 0 auf L1 Pos 32 (linker Inner-Thumb).
-         * Rechte Hand: BT-Profile, Studio, Reset, Output, MAC-Toggle.
-         * Pos 25 = &sl LEADER (sticky-layer Leader-Mechanik fuer TTY-Switch etc.).
+         * SYS - Pos 33 (ENT) hold.
+         * Rechts: BT 3-state (tap=select, Alt+tap=disc, Ctrl+Alt+tap=clear),
+         *         Reset, Studio, MAC-Toggle, PSCRN, Output.
+         * Links: pure Mods (fuer Mod-Combinations bei BT-Profilen).
+         * Pos 25 = sticky LEADER fuer TTY-Switch.
          */
-        L3 {
+        SYS {
             bindings = <
-&trans  &trans  &trans  &trans  &trans               &soft_off   &studio_unlock  &tog MAC   &bootloader  &sys_reset
-&trans  &trans  &trans  &trans  &trans               &bt0_mm     &bt1_mm         &bt2_mm    &bt3_mm      &bt4_mm
-&trans  &trans  &trans  &trans  &trans               &sl LEADER  &none           &kp PSCRN  &none        &out_tog
-                &trans  &trans  &trans               &trans      &trans          &trans
+&trans    &trans        &trans      &trans        &trans          &soft_off    &studio_unlock  &sl LEADER    &bootloader   &sys_reset
+&kp LGUI  &kp LALT      &kp LCTRL   &kp LSHFT     &trans          &bt0_3st     &bt1_3st        &bt2_3st      &bt3_3st      &bt4_3st
+&trans    &kp C_VOL_DN  &kp C_MUTE  &kp C_VOL_UP  &trans          &to BASE     &to MAC         &kp PSCRN     &out OUT_USB  &out OUT_BLE
+                        &kp C_PREV  &kp C_PP      &kp C_NEXT      &trans       &trans          &trans
             >;
         };
 
         /*
-         * L2 - NUM / F-Keys / SYM kombiniert.
-         * Mod-Morphs: Tap = Symbol/Ziffer, MOD (Shift via Pos 31) = F-Key oder shifted Symbol.
+         * NUM_SYM - Pos 34 (BSPC) hold.
+         * Zahlen/Symbole/F-Keys (Shift = F-Key bzw. shifted Symbol).
+         * Pos 31 = ESC (hold BSPC + tap SPC -> ESC).
          */
-        L4 {
+        NUM_SYM {
             bindings = <
-&none_f11  &none_f12  &semi_col   &kp LS(RBKT) &dqlo_dq           &dqhi_rsq    &amp_pct  &mins_uscore &eq_plus  &none
-&n1_f1     &n2_f2     &n3_f3      &n4_f4       &n5_f5             &n6_f6       &n7_f7    &n8_f8       &n9_f9    &n0_f10
-&grv_tild  &dollar_eur &at_excl   &hash_circ   &ndash_mdash       &ellip_deg   &lpar_rpar &lbrc_rbrc  &lcbr_rcbr &bsls_pipe
-                       &trans     &trans       &trans             &trans       &trans     &trans
-            >;
-        };
-
-        /* CMD - nur Umlaute, kein Clipboard mehr (ist auf Combos). */
-        CMD {
-            bindings = <
-&none  &none  &none  &none  &none      &none  &none  &ue_m  &none  &none
-&ae_m  &none  &ss_m  &none  &none      &none  &none  &none  &none  &oe_m
-&none  &none  &none  &none  &none      &none  &none  &none  &none  &none
-              &trans &trans &trans     &trans &trans &trans
+&none_f11   &none_f12   &semi_col    &kp LS(RBKT) &dqlo_dq        &dqhi_rsq    &amp_pct  &mins_uscore  &eq_plus    &none
+&n1_f1      &n2_f2      &n3_f3       &n4_f4       &n5_f5          &n6_f6       &n7_f7    &n8_f8        &n9_f9      &n0_f10
+&grv_tild   &dollar_eur &at_excl     &hash_circ   &ndash_mdash    &ellip_deg   &lpar_rpar &lbrc_rbrc   &lcbr_rcbr  &bsls_pipe
+                        &trans       &kp ESC      &trans          &trans       &trans     &trans
             >;
         };
 
         /*
-         * MAC_L4 - conditional ueber L4 + MAC. Ueberschreibt nur die Symbole,
-         * deren macOS-DE-Eingabe Option statt AltGr nutzt. Rest = trans.
+         * MAC_NUM_SYM - conditional ueber NUM_SYM + MAC.
+         * Ueberschreibt nur die Symbole, deren macOS-DE-Eingabe Option statt AltGr nutzt.
          */
-        MAC_L4 {
+        MAC_NUM_SYM {
             bindings = <
-&trans     &trans     &trans     &trans     &dqlo_dq_mac      &dqhi_rsq_mac &trans  &trans         &trans         &trans
-&trans     &trans     &trans     &trans     &trans            &trans     &trans     &trans         &trans         &trans
-&grv_tild_mac &trans  &at_excl_mac &hash_circ_mac &ndash_mdash_mac  &ellip_deg_mac &trans &lbrc_rbrc_mac &lcbr_rcbr_mac &bsls_pipe_mac
-                      &trans     &trans     &trans            &trans     &trans     &trans
+&trans         &trans     &trans         &trans          &dqlo_dq_mac      &dqhi_rsq_mac   &trans   &trans         &trans         &trans
+&trans         &trans     &trans         &trans          &trans            &trans          &trans   &trans         &trans         &trans
+&grv_tild_mac  &trans     &at_excl_mac   &hash_circ_mac  &ndash_mdash_mac  &ellip_deg_mac  &trans   &lbrc_rbrc_mac &lcbr_rcbr_mac &bsls_pipe_mac
+                          &trans         &trans          &trans            &trans          &trans   &trans
             >;
         };
 
         /*
-         * LEADER - sticky-layer aktiviert via &sl LEADER (auf L3 Pos 25).
-         * Erste Taste nach Aktivierung wird hier interpretiert, dann Layer wieder weg.
-         * Pos 0-4 (Reihe 2 links) = tty1..tty5 (Linux Ctrl+Alt+F1..F5).
-         * Alle anderen Positionen = &none -> Sticky-Layer wird einfach beendet.
+         * MAC_SYS - conditional ueber SYS + MAC.
+         * Ueberschreibt PSCRN auf Pos 27 mit Mac-Screenshot (Shift+Ctrl+Cmd+4).
+         */
+        MAC_SYS {
+            bindings = <
+&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans       &trans  &trans
+&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans       &trans  &trans
+&trans  &trans  &trans  &trans  &trans     &trans  &trans  &pscrn_mac   &trans  &trans
+                &trans  &trans  &trans     &trans  &trans  &trans
+            >;
+        };
+
+        /*
+         * LEADER - sticky-layer via SYS Pos 25.
+         * Erste Taste nach Aktivierung interpretiert, dann Layer wieder weg.
+         * Pos 10-14 (Reihe 2 links) = tty1..tty5 (Linux Ctrl+Alt+F1..F5).
          */
         LEADER {
             bindings = <
@@ -715,21 +666,6 @@
 &tty1  &tty2  &tty3  &tty4  &tty5      &none  &none  &none  &none  &none
 &none  &none  &none  &none  &none      &none  &none  &none  &none  &none
                 &none  &none  &none      &none  &none  &none
-            >;
-        };
-
-        /*
-         * MAC_L3 - conditional ueber L3 + MAC. Ueberschreibt PSCRN auf Pos 27
-         * mit dem Mac-Pendant (Shift+Ctrl+Cmd+4 = Bildausschnitt -> Zwischenablage).
-         * Alle anderen Slots trans, damit L3-Funktionen (BT-Profile, Studio etc.)
-         * unveraendert durchfallen.
-         */
-        MAC_L3 {
-            bindings = <
-&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans       &trans  &trans
-&trans  &trans  &trans  &trans  &trans     &trans  &trans  &trans       &trans  &trans
-&trans  &trans  &trans  &trans  &trans     &trans  &trans  &pscrn_mac   &trans  &trans
-                &trans  &trans  &trans     &trans  &trans  &trans
             >;
         };
     };
